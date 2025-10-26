@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { spotifyGet, spotifyPaginate, SPOTIFY_API_BASE } from '../services/spotify';
+import { extractMusicThemes } from '../services/openai';
 import { AppError } from '../utils/errors';
 import {
   UserProfileSchema,
@@ -220,6 +221,105 @@ router.get('/spotify/recent', async (req, res) => {
   );
 
   return res.json(recent);
+});
+
+// NEW: AI-powered theme extraction
+router.get('/spotify/themes', async (req, res) => {
+  const accessToken = getAccessToken(req);
+
+  try {
+    // Fetch all Spotify data in parallel
+    const [topArtists, topTracks, playlists, recentlyPlayed] = await Promise.all([
+      // Top Artists
+      (async () => {
+        if (process.env.MOCK_MODE === 'true') return getMockArtists(25);
+        const data = await spotifyGet<any>(
+          `${SPOTIFY_API_BASE}/me/top/artists?time_range=medium_term&limit=25`,
+          accessToken
+        );
+        return data.items.map((item: any) =>
+          ArtistSchema.parse({
+            id: item.id,
+            name: item.name,
+            genres: item.genres || [],
+            image: item.images?.[0]?.url,
+            popularity: item.popularity,
+          })
+        );
+      })(),
+      
+      // Top Tracks
+      (async () => {
+        if (process.env.MOCK_MODE === 'true') return getMockTracks(25);
+        const data = await spotifyGet<any>(
+          `${SPOTIFY_API_BASE}/me/top/tracks?time_range=medium_term&limit=25`,
+          accessToken
+        );
+        return data.items.map((item: any) =>
+          TrackSchema.parse({
+            id: item.id,
+            name: item.name,
+            artists: item.artists.map((a: any) => ({ id: a.id, name: a.name })),
+            album: {
+              id: item.album.id,
+              name: item.album.name,
+              image: item.album.images?.[0]?.url,
+            },
+            popularity: item.popularity,
+          })
+        );
+      })(),
+      
+      // Playlists
+      (async () => {
+        if (process.env.MOCK_MODE === 'true') return getMockPlaylists();
+        const items = await spotifyPaginate<any>(
+          `${SPOTIFY_API_BASE}/me/playlists?limit=50`,
+          accessToken
+        );
+        return items.map((item: any) =>
+          PlaylistSchema.parse({
+            id: item.id,
+            name: item.name,
+            description: item.description || '',
+            image: item.images?.[0]?.url,
+            tracksTotal: item.tracks.total,
+            public: item.public,
+            ownerId: item.owner.id,
+          })
+        );
+      })(),
+      
+      // Recently Played
+      (async () => {
+        if (process.env.MOCK_MODE === 'true') return getMockRecent();
+        const data = await spotifyGet<any>(
+          `${SPOTIFY_API_BASE}/me/player/recently-played?limit=50`,
+          accessToken
+        );
+        return data.items.map((item: any) =>
+          RecentlyPlayedItemSchema.parse({
+            trackId: item.track.id,
+            trackName: item.track.name,
+            artistIds: item.track.artists.map((a: any) => a.id),
+            playedAt: item.played_at,
+          })
+        );
+      })(),
+    ]);
+
+    // Extract themes using OpenAI
+    const themes = await extractMusicThemes({
+      topArtists,
+      topTracks,
+      playlists,
+      recentlyPlayed,
+    });
+
+    return res.json(themes);
+  } catch (error: any) {
+    throw new AppError(500, `Failed to extract themes: ${error.message}`);
+  }
 });
 
 export default router;
