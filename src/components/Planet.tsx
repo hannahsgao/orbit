@@ -55,7 +55,8 @@ export function Planet({ x, y, radius, color, imageAsset, onClick, isSelected = 
             width: '100%',
             height: '100%',
             imageRendering: 'pixelated',
-            filter: isSelected ? 'drop-shadow(0 0 4px #FFFFFF)' : 'none',
+            outline: isSelected ? '2px solid #FFFFFF' : 'none',
+            outlineOffset: isSelected ? '1px' : '0px',
           }}
           onError={() => setImageError(true)}
         />

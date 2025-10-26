@@ -402,6 +402,11 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
   const handleMouseDown = (e: React.MouseEvent) => {
     const isCmdPressed = e.metaKey || e.ctrlKey;
     
+    // Deselect planets when clicking on empty space (not Cmd+drag)
+    if (!isCmdPressed && !isDragging) {
+      setSelectedPlanetIds(new Set());
+    }
+    
     if (!isCmdPressed && focusedPlanetId) {
       // Disable panning while focused
       return;
@@ -696,8 +701,9 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
         <div 
           style={{
             position: 'absolute',
-            top: '20px',
-            right: '20px',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
             background: 'rgba(255, 255, 255, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
             padding: '8px 12px',
@@ -711,16 +717,16 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
           }}
         >
           <div style={{ pointerEvents: 'none' }}>
-            ZOOM: {zoom.toFixed(2)}x | PAN: ({Math.round(pan.x)}, {Math.round(pan.y)}) | SELECTED: {selectedPlanetIds.size}
+            ZOOM: {zoom.toFixed(2)}x | SELECTED: {selectedPlanetIds.size}
           </div>
-          <div style={{ display: 'flex', gap: '4px', pointerEvents: 'auto' }}>
+          <div style={{ display: 'flex', gap: '4px', pointerEvents: 'auto', justifyContent: 'center' }}>
             <button
               onClick={() => setTargetZoom(Math.max(0.05, targetZoom * 0.8))}
               style={{
                 background: 'rgba(255, 255, 255, 0.2)',
                 border: '1px solid rgba(255, 255, 255, 0.4)',
                 color: 'white',
-                padding: '4px 8px',
+                padding: '2px 6px',
                 fontSize: '10px',
                 cursor: 'pointer',
                 fontFamily: 'monospace'
@@ -734,7 +740,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
                 background: 'rgba(255, 255, 255, 0.2)',
                 border: '1px solid rgba(255, 255, 255, 0.4)',
                 color: 'white',
-                padding: '4px 8px',
+                padding: '2px 6px',
                 fontSize: '10px',
                 cursor: 'pointer',
                 fontFamily: 'monospace'
@@ -753,7 +759,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
                 background: 'rgba(255, 255, 255, 0.2)',
                 border: '1px solid rgba(255, 255, 255, 0.4)',
                 color: 'white',
-                padding: '4px 8px',
+                padding: '2px 6px',
                 fontSize: '10px',
                 cursor: 'pointer',
                 fontFamily: 'monospace'
