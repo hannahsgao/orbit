@@ -1,0 +1,7 @@
+{
+  "apiBase": "http://127.0.0.1:8000",
+  "historyPath": "/Users/$USER/Library/Application Support/Google/Chrome/Default/History",
+  "includeArchived": false,
+  "llmModel": "gpt-4o-mini",
+  "embedModel": ""
+} 

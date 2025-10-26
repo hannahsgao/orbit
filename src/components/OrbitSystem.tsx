@@ -11,7 +11,22 @@ interface PlanetNode {
   parentId: string | null;
   children: string[];
   hasSpawnedChildren: boolean;
+  label?: string;
+  payload?: PlanetPayload;
+  plannedChildren?: PlannedChild[];
 }
+
+type PlanetPayload = {
+  type: 'theme' | 'subtheme' | 'link';
+  rationale?: string;
+  url?: string;
+};
+
+type PlannedChild = {
+  label: string;
+  payload: PlanetPayload;
+  links?: Array<{ title: string; url: string }>;
+};
 
 interface OrbitSystemProps {
   centerX: number;
@@ -49,37 +64,105 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
   const [labelSeqIndex, setLabelSeqIndex] = useState(0);
   const [labelSeqNextAt, setLabelSeqNextAt] = useState(0);
 
-  // Initialize with root planets
+  // Initialize with root planets from ThemeScope API if configured, else fallback JSON (5-8 themes)
   useEffect(() => {
-    const initialPlanets: PlanetNode[] = [];
-    
-    // Create multiple orbital rings with planets
-    const orbits = [
-      { radius: 150, count: 2, speed: 0.2 },
-      { radius: 260, count: 4, speed: 0.22 },
-      { radius: 380, count: 5, speed: 0.15 },
-    ];
+    let cancelled = false;
+    const loadData = async () => {
+      try {
+        // Try dynamic API first if config exists
+        let data: any | null = null;
+        try {
+          const cfgResp = await fetch(`/themescope_config.json?t=${Date.now()}`, { cache: 'no-cache' });
+          if (cfgResp.ok) {
+            const cfg = await cfgResp.json();
+            const apiBase: string = (cfg?.apiBase as string) || 'http://127.0.0.1:8000';
+            const historyPath: string | undefined = cfg?.historyPath;
+            const includeArchived: boolean = cfg?.includeArchived ?? true;
+            const llmModel: string | undefined = cfg?.llmModel;
+            const embedModel: string | undefined = cfg?.embedModel;
+            if (historyPath) {
+              const params = new URLSearchParams({
+                history: historyPath,
+                include_archived: String(includeArchived),
+                themes_min: '5',
+                themes_max: '8',
+                subs_min: '2',
+                subs_max: '4',
+                sources_min: '2',
+                sources_max: '4'
+              });
+              if (llmModel) params.set('llm_model', llmModel);
+              if (embedModel) params.set('embed_model', embedModel);
+              const apiUrl = `${apiBase.replace(/\/$/, '')}/orbit?${params.toString()}`;
+              const apiResp = await fetch(apiUrl, { cache: 'no-cache' });
+              if (apiResp.ok) {
+                data = await apiResp.json();
+              }
+            }
+          }
+        } catch (_) {
+          // ignore and fall back to static JSON
+        }
 
-    let planetIndex = 0;
-    orbits.forEach(orbit => {
-      for (let i = 0; i < orbit.count; i++) {
-        const id = `planet-${planetIndex}`;
-        initialPlanets.push({
-          id,
-          orbitRadius: orbit.radius,
-          orbitSpeed: orbit.speed + Math.random() * 0.05,
-          planetRadius: 12 + Math.random() * 18,
-          color: '#FFFFFF',
-          angle: (Math.PI * 2 * i) / orbit.count + Math.random() * 0.5,
-          parentId: null,
-          children: [],
-          hasSpawnedChildren: false
+        // Fallback to bundled sample if API fetch didn't yield usable data
+        if (!data || !Array.isArray(data?.themes)) {
+          const resp = await fetch(`/themescope_orbit.json?t=${Date.now()}`, { cache: 'no-cache' });
+          if (!resp.ok) throw new Error(`Failed to load themescope_orbit.json: ${resp.status}`);
+          data = await resp.json();
+        }
+
+        // Normalize shape: subtheme.sources -> links[] for UI
+        const themes: Array<{ label: string; subthemes?: Array<{ label: string; links?: Array<{ title: string; url: string }> }> }> =
+          Array.isArray(data?.themes)
+            ? (data.themes as any[]).map(t => ({
+                label: t?.label,
+                subthemes: Array.isArray(t?.subthemes)
+                  ? t.subthemes.map((st: any) => ({
+                      label: st?.label,
+                      links: Array.isArray(st?.links)
+                        ? st.links
+                        : (Array.isArray(st?.sources) ? st.sources : [])
+                    }))
+                  : []
+              }))
+            : [];
+        // Enforce 5-8 themes
+        const desiredThemes = themes.slice(0, Math.min(8, Math.max(5, themes.length)));
+        const ringRadii = [150, 260, 380];
+        const ringSpeeds = [0.2, 0.22, 0.15];
+        const initialPlanets: PlanetNode[] = desiredThemes.map((t, idx) => {
+          const ringIdx = idx % ringRadii.length;
+          const id = `theme-${idx}`;
+          const subthemes = Array.isArray(t.subthemes) ? t.subthemes : [];
+          // Clamp 2-4 subthemes
+          const plannedChildren: PlannedChild[] = subthemes.slice(0, Math.min(4, Math.max(2, subthemes.length)) ).map(st => ({
+            label: st.label,
+            payload: { type: 'subtheme' },
+            links: Array.isArray(st.links) ? st.links : [],
+          }));
+          return {
+            id,
+            label: t.label,
+            payload: { type: 'theme' },
+            plannedChildren,
+            orbitRadius: ringRadii[ringIdx],
+            orbitSpeed: ringSpeeds[ringIdx] + Math.random() * 0.05,
+            planetRadius: 18 + Math.random() * 10,
+            color: '#FFFFFF',
+            angle: (Math.PI * 2 * (idx % Math.max(1, desiredThemes.length))) / Math.max(1, desiredThemes.length) + Math.random() * 0.5,
+            parentId: null,
+            children: [],
+            hasSpawnedChildren: false,
+          };
         });
-        planetIndex++;
+        if (!cancelled) setPlanets(initialPlanets);
+      } catch (err) {
+        // Fallback to no planets on error
+        if (!cancelled) setPlanets([]);
       }
-    });
-    
-    setPlanets(initialPlanets);
+    };
+    loadData();
+    return () => { cancelled = true; };
   }, []);
 
   // Animation loop with camera smoothing
@@ -593,30 +676,37 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
         return prevPlanets;
       }
  
-      // Generate 2-4 child planets
-      const numChildren = 2 + Math.floor(Math.random() * 3);
- 
-      for (let i = 0; i < numChildren; i++) {
-        const childId = `${planetId}-child-${Date.now()}-${i}`;
-        // Clamp child radius to be smaller than parent
-        const tentativeRadius = 8 + Math.random() * 10;
-        const maxChildRadius = Math.max(2, clickedPlanet.planetRadius * 0.8);
-        const childRadius = Math.min(tentativeRadius, maxChildRadius);
-        const childPlanet: PlanetNode = {
-          id: childId,
-          orbitRadius: 40 + i * 15,
-          orbitSpeed: 0.5 + Math.random() * 0.5,
-          planetRadius: childRadius,
-          color: '#FFFFFF',
-          angle: (Math.PI * 2 * i) / numChildren,
-          parentId: planetId,
-          children: [],
-          hasSpawnedChildren: false
-        };
-        
-        newPlanets.push(childPlanet);
-        clickedPlanet.children.push(childId);
-      }
+    // Generate children from plannedChildren (2-4), and for subthemes generate their planned link children (2-4)
+    const planned = Array.isArray(clickedPlanet.plannedChildren) ? clickedPlanet.plannedChildren : [];
+    const numChildren = Math.min(4, Math.max(2, planned.length || 0));
+    for (let i = 0; i < numChildren; i++) {
+      const pch = planned[i];
+      const childId = `${planetId}-child-${i}`;
+      const tentativeRadius = 8 + Math.random() * 10;
+      const maxChildRadius = Math.max(2, clickedPlanet.planetRadius * 0.8);
+      const childRadius = Math.min(tentativeRadius, maxChildRadius);
+      const childPlanet: PlanetNode = {
+        id: childId,
+        label: pch?.label || childId,
+        payload: pch?.payload,
+        plannedChildren: pch?.payload?.type === 'subtheme'
+          ? (Array.isArray(pch.links) ? pch.links.slice(0, Math.min(4, Math.max(2, pch.links.length)) ).map((lnk, j) => ({
+              label: lnk.title,
+              payload: { type: 'link', url: lnk.url },
+            })) : [])
+          : undefined,
+        orbitRadius: 40 + i * 15,
+        orbitSpeed: 0.5 + Math.random() * 0.5,
+        planetRadius: childRadius,
+        color: '#FFFFFF',
+        angle: (Math.PI * 2 * i) / Math.max(1, numChildren),
+        parentId: planetId,
+        children: [],
+        hasSpawnedChildren: false
+      };
+      newPlanets.push(childPlanet);
+      clickedPlanet.children.push(childId);
+    }
       // Mark that this planet has spawned at least once
       clickedPlanet.hasSpawnedChildren = true;
       
@@ -863,7 +953,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
             .map(planet => {
               const pos = calculatePosition(planet);
               const transformedPos = transformPosition(pos);
-              const label = planet.id;
+              const label = planet.label || planet.id;
               const flashVisible = labelFlash[planet.id]?.visible ?? false;
               const forceVisible = hoveredPlanetId === planet.id;
               return (
