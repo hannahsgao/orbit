@@ -8,6 +8,7 @@ import { validateEnv } from './utils/env';
 import authRouter from './routes/auth';
 import spotifyRouter from './routes/spotify';
 import gmailRouter from './routes/gmail';
+import themesRouter from './routes/themes';
 
 dotenv.config();
 validateEnv();
@@ -27,6 +28,7 @@ app.use((req, _res, next) => {
 app.use(authRouter);
 app.use(spotifyRouter);
 app.use(gmailRouter);
+app.use(themesRouter);
 
 app.use(errorMiddleware);
 

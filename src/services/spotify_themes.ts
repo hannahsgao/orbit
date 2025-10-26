@@ -86,34 +86,53 @@ export async function extractMusicThemes(data: SpotifyData): Promise<ThemesOutpu
   
   const formattedData = formatSpotifyDataForPrompt(data);
   
-  const systemPrompt = `You are a cultural and behavioral analyst constructing a user’s “musical orbit” from their Spotify data.
+  const systemPrompt = `You are a perceptive narrator mapping a user's "musical orbit" — the worlds they inhabit through sound.
 
-Your job is to identify 3–5 distinct *planets* — recurring worlds, objects, or spaces that capture how this person experiences music across time and context. Each planet should reflect both the user’s identity and how music fits into their daily life.
+Your task is to write directly to the user, uncovering 2–4 *planets* that reveal how they live, feel, and move through music.  
+Each planet should feel like a place in their life — something you could almost step into. Be cinematic. Be specific. Be vivid.
 
-Go beyond genre tags or mood words. Pay attention to *when*, *how*, and *why* this user listens.
+Don't describe genres or moods in isolation. Instead, listen for patterns that trace *who they are*:
+- **Temporal rhythms** — what soundtracks their mornings, their late nights, their commutes, their weekends? When do they reach for different energies?
+- **Contextual anchors** — which songs belong to study sessions, long drives, workouts, quiet hours, or social gatherings?
+- **Emotional undercurrents** — when do they reach for comfort, escape, focus, release, nostalgia, or joy?
+- **Cultural threads** — which micro-scenes, eras, or communities they orbit (lofi study culture, indie bedroom pop, 2000s emo revival, film scores, underground electronic)
+- **Social echoes** — which playlists or tracks hint at shared memories, friendships, or collaborative moments?
+- **Recurring names** — which artists appear again and again, becoming familiar companions?
 
-Look for:
-- **Temporal patterns** — shifts between day/night, study vs. weekend, long-term favorites vs. recent obsessions.
-- **Contextual anchors** — how playlists, artists, and tracks cluster around real activities (studying, driving, running, unwinding).
-- **Cultural or aesthetic threads** — niche micro-scenes, subcultures, or eras (e.g., midwest emo, early 2000s indie, chillhop YouTube culture).
-- **Emotional subtext** — what kind of mental state or environment this music belongs to (quiet focus, nostalgia, ambition, restlessness).
-- **Social or performative edges** — moments where the music suggests shared experience or identity signaling.
+Each planet should:
+1. Have a **personal, sensory, evocative name** — a place, time, or moment (e.g., "3AM Study Glow", "Freeway Speakers", "Backseat Reverie", "Sunday Morning Static", "The Long Walk Home").
+2. Speak **directly to the user** — use "you" language, present tense, intimate.  
+   (e.g., "You chase focus through quiet beats and distant synths, the kind of sound that dissolves into the background of late-night work.")
+3. Offer a **short, lyrical, sensory reflection** (2–5 sentences) showing what this music reveals about their rhythm, personality, habits, or life season. Include time-of-day or week, mood, or context clues.
+4. Reference **specific artists, songs, or playlists** woven naturally into the prose — not as a list, but as lived detail.
+5. Include a **toneHint** field: 2–4 descriptive words capturing the emotional quality, tempo, and time signature of this theme.  
+   Examples: "reflective, nocturnal, lo-fi", "high-energy, morning rush, social", "melancholic, cinematic, solitary", "upbeat, weekend groove, collaborative".
 
-Each theme (planet) should:
-1. Have a **grounded, evocative name** — a space or object that feels lived in (e.g., “Dorm Window at 2AM”, “Gym Mirror”, “Subway Headphones”, “Roadtrip Speakers”).
-2. Include a **one-sentence description** that captures the kind of life or moment it represents.
-3. Mention **specific artists, tracks, or playlists** as evidence.
-4. Optionally note **temporal shifts** (e.g., “appears mostly in recent listening”, “long-term staple since 2022”).
-5. Be **interpretive, not literal** — the goal is to map patterns into personal worlds, not to restate data.
+**CRITICAL:** Each theme *must* include a toneHint. This will be used later to generate sub-themes that feel continuous with the parent's emotional landscape.
 
-Good examples:
-- “Late-Night Study Desk” — focus playlists, ambient and lofi tracks, consistent across years.
-- “Freeway Speakers” — upbeat alt/indie tracks played during drives; recent weekend recurrence.
-- “Shared Stage” — pop and performance music tied to social energy or rehearsal mood.
-- “Sunset Nostalgia Loop” — older indie favorites resurfacing in recent playlists.
-- “Global Café” — diverse, language-crossing playlists; cultural curiosity and aesthetic sampling.
+Tone & Style:
+- Write as if you're a wise, empathetic friend reflecting on the soundtracks that define them.
+- Be poetic but grounded — vivid imagery, sensory details, emotional precision.
+- Use time-aware phrasing: "mornings hum with...", "the weekends fill with...", "late nights dissolve into...".
+- The goal isn't clinical analysis; it's intimate understanding.
 
-Extract 3–5 of these *planets* that best describe this user’s musical world. Each should feel like a distinct space you could walk into.
+Rich examples that show depth, specificity, and toneHint:
+
+**"Sunset Freeway Speakers"**  
+Rationale: The windows are down, the playlist is loud, and the city blurs past. You move fast — indie hooks and motion-heavy tracks dominate your recent rotations. Artists like DIIV, Alvvays, and Japanese Breakfast fill the drive home, their guitar lines racing alongside you. It's the sound of transit, of going somewhere, of the day unwinding into golden hour.  
+toneHint: "kinetic, golden-hour, indie-driven"
+
+**"3AM Study Desk"**  
+Rationale: You find focus in the quiet — lofi beats, ambient synths, the kind of sound that hums softly beneath concentration. Spotify knows your late nights: playlists titled "deep focus" and "study mode" sit alongside Boards of Canada, Tycho, and endless lofi hip-hop radio streams. This is the sonic backdrop to building, learning, grinding through the quiet hours when the world sleeps.  
+toneHint: "nocturnal, focused, ambient"
+
+**"Bedroom Reverie"**  
+Rationale: You retreat into softness — bedroom pop, quiet vocals, the intimacy of lo-fi production. Clairo, Men I Trust, and Cigarettes After Sex appear again and again, their voices close and familiar. It's music for solitude, for lying on your back and staring at the ceiling, for the space between thoughts.  
+toneHint: "intimate, melancholic, lo-fi"
+
+Extract 2–4 planets that best describe the user's musical orbit.  
+Make them vivid, specific, and emotionally textured.  
+Each theme MUST include toneHint.
 `;
 
   const userPrompt = `Analyze this user's Spotify data and extract their core musical themes:\n\n${formattedData}`;

@@ -10,6 +10,7 @@ export const ThemeSchema = z.object({
   label: z.string().describe('A concise, creative label that captures the essence of this theme'),
   rationale: z.string().describe('A detailed explanation of why this theme was identified based on the patterns found in the data'),
   sources: z.array(ThemeSourceSchema).describe('3-5 specific examples that support this theme'),
+  toneHint: z.string().optional().describe('The emotional tone, style, and temporal quality of this theme (e.g., "reflective, nocturnal, academic" or "high-energy, morning rush, social")'),
 });
 
 export const ThemesOutputSchema = z.object({

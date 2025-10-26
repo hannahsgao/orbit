@@ -1,0 +1,35 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = require("express");
+var cookie_parser_1 = require("cookie-parser");
+var dotenv_1 = require("dotenv");
+var cors_1 = require("./utils/cors");
+var errors_1 = require("./utils/errors");
+var logger_1 = require("./utils/logger");
+var env_1 = require("./utils/env");
+var auth_1 = require("./routes/auth");
+var spotify_1 = require("./routes/spotify");
+var gmail_1 = require("./routes/gmail");
+var themes_1 = require("./routes/themes");
+dotenv_1.default.config();
+(0, env_1.validateEnv)();
+var app = (0, express_1.default)();
+var PORT = process.env.SERVER_PORT || 5173;
+app.use(cors_1.corsOptions);
+app.use(express_1.default.json());
+app.use((0, cookie_parser_1.default)());
+app.use(function (req, _res, next) {
+    logger_1.logger.info({ method: req.method, path: req.path }, 'Incoming request');
+    next();
+});
+app.use(auth_1.default);
+app.use(spotify_1.default);
+app.use(gmail_1.default);
+app.use(themes_1.default);
+app.use(errors_1.errorMiddleware);
+app.listen(PORT, function () {
+    logger_1.logger.info({ port: PORT, mockMode: process.env.MOCK_MODE === 'true' }, 'Server started');
+    logger_1.logger.info("orbit-mcp-spotify running on http://127.0.0.1:".concat(PORT));
+    logger_1.logger.info("Mock mode: ".concat(process.env.MOCK_MODE === 'true' ? 'ENABLED' : 'DISABLED'));
+    logger_1.logger.info("Origin: ".concat(process.env.ORIGIN || 'http://127.0.0.1:3000'));
+});

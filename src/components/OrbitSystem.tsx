@@ -67,6 +67,7 @@ export function OrbitSystem({ centerX, centerY, personalityTree }: OrbitSystemPr
   const [hoveredPlanetId, setHoveredPlanetId] = useState<string | null>(null);
   const [labelSeqIndex, setLabelSeqIndex] = useState(0);
   const [labelSeqNextAt, setLabelSeqNextAt] = useState(0);
+  const [expandingPlanetIds, setExpandingPlanetIds] = useState<Set<string>>(new Set());
 
   // Initialize with root planets
   useEffect(() => {
@@ -641,54 +642,174 @@ export function OrbitSystem({ centerX, centerY, personalityTree }: OrbitSystemPr
       });
     }
  
-    setPlanets(prevPlanets => {
-      const newPlanets = [...prevPlanets];
-      const clickedPlanetIndex = newPlanets.findIndex(p => p.id === planetId);
- 
-      if (clickedPlanetIndex === -1) return prevPlanets;
- 
-      const clickedPlanet = newPlanets[clickedPlanetIndex];
- 
-      // If this planet has ever spawned children, do not spawn more
-      if (clickedPlanet.hasSpawnedChildren) {
-        return prevPlanets;
+    // Handle child generation: LLM-based for themed planets, random for others
+    const expandPlanetChildren = async () => {
+      const planet = planets.find(p => p.id === planetId);
+      if (!planet) return;
+
+      // Already has children or is expanding
+      if (planet.hasSpawnedChildren || expandingPlanetIds.has(planetId)) {
+        return;
       }
- 
-      // If this planet already has satellites, do not spawn more
-      if (clickedPlanet.children && clickedPlanet.children.length > 0) {
-        return prevPlanets;
+
+      // If planet has theme data, use LLM to generate sub-themes
+      if (planet.themeData) {
+        try {
+          setExpandingPlanetIds(prev => new Set(prev).add(planetId));
+
+          // Build sources array from dataSources examples
+          const sources: Array<{title: string; type: string}> = [];
+          if (planet.themeData.dataSources.spotify?.examples) {
+            planet.themeData.dataSources.spotify.examples.forEach(ex => {
+              sources.push({ title: ex, type: 'track' });
+            });
+          }
+          if (planet.themeData.dataSources.gmail?.examples) {
+            planet.themeData.dataSources.gmail.examples.forEach(ex => {
+              sources.push({ title: ex, type: 'email' });
+            });
+          }
+          if (planet.themeData.dataSources.search?.examples) {
+            planet.themeData.dataSources.search.examples.forEach(ex => {
+              sources.push({ title: ex, type: 'search' });
+            });
+          }
+
+          // Call backend to expand theme - pass rich parent context including toneHint
+          const response = await fetch('http://127.0.0.1:5173/themes/expand', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              parentTheme: {
+                id: planet.id,
+                label: planet.themeData.name,
+                rationale: planet.themeData.description,
+                sources: sources, // Pass sources array built from examples
+                level: planet.themeData.level,
+                dataSource: planet.themeData.dataSources.spotify ? 'spotify' :
+                           planet.themeData.dataSources.gmail ? 'gmail' : 'mixed',
+                toneHint: (planet.themeData as any).toneHint || undefined, // Pass tone hint for continuity
+              },
+              userId: 'user-current',
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to expand theme');
+          }
+
+          const data = await response.json();
+          const subthemes = data.subthemes;
+
+          // Convert sub-themes to planet nodes
+          setPlanets(prevPlanets => {
+            const newPlanets = [...prevPlanets];
+            const parentIndex = newPlanets.findIndex(p => p.id === planetId);
+            if (parentIndex === -1) return prevPlanets;
+
+            const parent = newPlanets[parentIndex];
+            const numChildren = subthemes.length;
+
+            subthemes.forEach((subtheme: any, i: number) => {
+              const childId = `${planetId}-child-${Date.now()}-${i}`;
+              const childRadius = Math.max(2, parent.planetRadius * 0.6);
+
+              // Create theme node for child
+              const childThemeData: ThemeNode = {
+                id: childId,
+                name: subtheme.label,
+                description: subtheme.rationale,
+                level: 'subtheme',
+                visualProperties: parent.themeData?.visualProperties || {
+                  color: '#FFFFFF',
+                  size: 'medium',
+                },
+                dataSources: parent.themeData?.dataSources || {},
+                parentId: planetId,
+                childIds: [],
+              };
+
+              const childPlanet: PlanetNode = {
+                id: childId,
+                orbitRadius: 40 + i * 15,
+                orbitSpeed: 0.5 + Math.random() * 0.3,
+                planetRadius: childRadius,
+                color: parent.color,
+                angle: (Math.PI * 2 * i) / numChildren,
+                parentId: planetId,
+                children: [],
+                hasSpawnedChildren: false,
+                imageAsset: parent.imageAsset, // Inherit parent's image
+                themeData: childThemeData,
+              };
+
+              newPlanets.push(childPlanet);
+              parent.children.push(childId);
+            });
+
+            parent.hasSpawnedChildren = true;
+            return newPlanets;
+          });
+        } catch (error) {
+          console.error('Failed to expand theme:', error);
+          // Fall back to random generation on error
+          generateRandomChildren(planetId);
+        } finally {
+          setExpandingPlanetIds(prev => {
+            const next = new Set(prev);
+            next.delete(planetId);
+            return next;
+          });
+        }
+      } else {
+        // No theme data - use random generation
+        generateRandomChildren(planetId);
       }
- 
-      // Generate 2-4 child planets
-      const numChildren = 2 + Math.floor(Math.random() * 3);
- 
-      for (let i = 0; i < numChildren; i++) {
-        const childId = `${planetId}-child-${Date.now()}-${i}`;
-        // Clamp child radius to be smaller than parent
-        const tentativeRadius = 8 + Math.random() * 8;
-        const maxChildRadius = Math.max(2, clickedPlanet.planetRadius * 0.5);
-        const childRadius = Math.min(tentativeRadius, maxChildRadius);
-        const childPlanet: PlanetNode = {
-          id: childId,
-          orbitRadius: 40 + i * 15,
-          orbitSpeed: 0.5 + Math.random() * 0.5,
-          planetRadius: childRadius,
-          color: '#FFFFFF',
-          angle: (Math.PI * 2 * i) / numChildren,
-          parentId: planetId,
-          children: [],
-          hasSpawnedChildren: false,
-          imageAsset: getRandomPlanetAsset()
-        };
-        
-        newPlanets.push(childPlanet);
-        clickedPlanet.children.push(childId);
-      }
-      // Mark that this planet has spawned at least once
-      clickedPlanet.hasSpawnedChildren = true;
-      
-      return newPlanets;
-    });
+    };
+
+    // Helper function for random child generation
+    const generateRandomChildren = (planetId: string) => {
+      setPlanets(prevPlanets => {
+        const newPlanets = [...prevPlanets];
+        const parentIndex = newPlanets.findIndex(p => p.id === planetId);
+        if (parentIndex === -1) return prevPlanets;
+
+        const parent = newPlanets[parentIndex];
+        if (parent.hasSpawnedChildren) return prevPlanets;
+
+        const numChildren = 2 + Math.floor(Math.random() * 3);
+
+        for (let i = 0; i < numChildren; i++) {
+          const childId = `${planetId}-child-${Date.now()}-${i}`;
+          const tentativeRadius = 8 + Math.random() * 8;
+          const maxChildRadius = Math.max(2, parent.planetRadius * 0.5);
+          const childRadius = Math.min(tentativeRadius, maxChildRadius);
+
+          const childPlanet: PlanetNode = {
+            id: childId,
+            orbitRadius: 40 + i * 15,
+            orbitSpeed: 0.5 + Math.random() * 0.5,
+            planetRadius: childRadius,
+            color: '#FFFFFF',
+            angle: (Math.PI * 2 * i) / numChildren,
+            parentId: planetId,
+            children: [],
+            hasSpawnedChildren: false,
+            imageAsset: getRandomPlanetAsset(),
+          };
+
+          newPlanets.push(childPlanet);
+          parent.children.push(childId);
+        }
+
+        parent.hasSpawnedChildren = true;
+        return newPlanets;
+      });
+    };
+
+    // Trigger expansion
+    expandPlanetChildren();
   };
 
   const findPlanet = (planetId: string): PlanetNode | undefined => {
@@ -920,21 +1041,41 @@ export function OrbitSystem({ centerX, centerY, personalityTree }: OrbitSystemPr
             const pos = calculatePosition(planet);
             const transformedPos = transformPosition(pos);
             const opacity = fullOpacityIds ? (fullOpacityIds.has(planet.id) ? 1 : 0.2) : 1;
+            const isExpanding = expandingPlanetIds.has(planet.id);
+            
             return (
-              <Planet
-                key={planet.id}
-                x={transformedPos.x}
-                y={transformedPos.y}
-                radius={planet.planetRadius * zoom}
-                color={planet.color}
-                imageAsset={planet.imageAsset}
-                onClick={(event) => handlePlanetClick(planet.id, event)}
-                isSelected={selectedPlanetIds.has(planet.id)}
-                opacity={opacity}
-                onMouseEnter={() => setHoveredPlanetId(planet.id)}
-                onMouseLeave={() => setHoveredPlanetId(prev => (prev === planet.id ? null : prev))}
-                themeData={planet.themeData}
-              />
+              <div key={planet.id} style={{ position: 'relative' }}>
+                <Planet
+                  x={transformedPos.x}
+                  y={transformedPos.y}
+                  radius={planet.planetRadius * zoom}
+                  color={planet.color}
+                  imageAsset={planet.imageAsset}
+                  onClick={(event) => handlePlanetClick(planet.id, event)}
+                  isSelected={selectedPlanetIds.has(planet.id)}
+                  opacity={opacity}
+                  onMouseEnter={() => setHoveredPlanetId(planet.id)}
+                  onMouseLeave={() => setHoveredPlanetId(prev => (prev === planet.id ? null : prev))}
+                  themeData={planet.themeData}
+                />
+                {/* Loading indicator for expanding planets */}
+                {isExpanding && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: transformedPos.x,
+                      top: transformedPos.y,
+                      transform: 'translate(-50%, -50%)',
+                      width: planet.planetRadius * zoom * 2.5,
+                      height: planet.planetRadius * zoom * 2.5,
+                      border: '2px dashed rgba(255, 255, 255, 0.6)',
+                      borderRadius: '50%',
+                      animation: 'spin 2s linear infinite',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
+              </div>
             );
           });
         })()}

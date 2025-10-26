@@ -195,7 +195,11 @@ router.get('/gmail/themes', async (req, res) => {
     // Get connected account
     const account = await getConnectedAccount(userId, 'gmail');
     if (!account) {
-      throw new AppError(401, 'Gmail not connected. Use POST /gmail/connect first.');
+      return res.status(401).json({
+        error: 'Gmail not connected',
+        message: 'Please authenticate with Gmail first',
+        connectUrl: '/gmail/connect'
+      });
     }
 
     // Fetch emails via Composio
@@ -234,9 +238,13 @@ router.get('/gmail/themes', async (req, res) => {
   } catch (error) {
     logger.error({ error, userId }, 'Failed to extract Gmail themes');
     if (error instanceof AppError) {
-      throw error;
+      return res.status(error.statusCode).json({
+        error: error.message
+      });
     }
-    throw new AppError(500, 'Failed to extract Gmail themes');
+    return res.status(500).json({
+      error: 'Failed to extract Gmail themes'
+    });
   }
 });
 

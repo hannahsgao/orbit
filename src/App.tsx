@@ -16,6 +16,8 @@ export default function App() {
   const [personalityTree, setPersonalityTree] = useState<PersonalityTree | undefined>(undefined);
   const [isLoadingThemes, setIsLoadingThemes] = useState(false);
   const [themesError, setThemesError] = useState<string | null>(null);
+  const [connectedSources, setConnectedSources] = useState<Set<string>>(new Set());
+  const [lastThemeCount, setLastThemeCount] = useState(0);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -49,30 +51,50 @@ export default function App() {
   };
 
   // Function to load themes from backend
-  const loadThemes = async () => {
+  const loadThemes = async (showNotification = false) => {
     setIsLoadingThemes(true);
     setThemesError(null);
 
     try {
-      const userId = 'user-' + Date.now(); // Generate a unique user ID (or use real user auth)
+      const userId = 'user-current'; // Use consistent user ID
       const tree = await fetchAndConvertThemes(userId);
 
       if (tree.nodes.length > 0) {
+        const newThemeCount = tree.nodes.length;
+        const hadNewThemes = newThemeCount > lastThemeCount;
+        
         setPersonalityTree(tree);
-        console.log('Loaded personality tree with', tree.nodes.length, 'themes');
+        setLastThemeCount(newThemeCount);
+        
+        // Track which sources are connected
+        const sources = new Set<string>();
+        tree.nodes.forEach(node => {
+          if (node.dataSources.spotify) sources.add('spotify');
+          if (node.dataSources.gmail) sources.add('gmail');
+          if (node.dataSources.search) sources.add('search');
+        });
+        setConnectedSources(sources);
+        
+        console.log('Loaded personality tree with', newThemeCount, 'themes from', Array.from(sources).join(', '));
+        
+        // Show notification if requested and new themes were added
+        if (showNotification && hadNewThemes && lastThemeCount > 0) {
+          const addedCount = newThemeCount - lastThemeCount;
+          console.log(`✨ Added ${addedCount} new theme${addedCount > 1 ? 's' : ''}!`);
+        }
       } else {
         // Silently fail if no themes - user might not have connected yet
-        console.log('No themes found yet');
+        console.log('No themes found yet - waiting for data sources');
       }
     } catch (error) {
       console.error('Error loading themes:', error);
-      // Don't show error to user on auto-load
+      setThemesError('Failed to load themes');
     } finally {
       setIsLoadingThemes(false);
     }
   };
 
-  // Auto-load themes when entering solar system
+  // Auto-load themes when entering solar system (one-time)
   useEffect(() => {
     if (hasEnteredSolarSystem && !personalityTree && !isLoadingThemes) {
       // Wait a bit for any OAuth redirects to complete, then try loading
@@ -83,21 +105,6 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [hasEnteredSolarSystem]);
-
-  // Poll for new themes periodically (only if user has connected but themes haven't loaded yet)
-  useEffect(() => {
-    if (!hasEnteredSolarSystem || personalityTree) return;
-
-    const interval = setInterval(() => {
-      // Only poll if we don't have themes yet
-      if (!personalityTree && !isLoadingThemes) {
-        console.log('Checking for new data...');
-        loadThemes();
-      }
-    }, 5000); // Check every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [hasEnteredSolarSystem, personalityTree, isLoadingThemes]);
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
@@ -157,11 +164,55 @@ export default function App() {
             marginBottom: '0.5rem',
           }}
         >
-          Connections
+          Data Sources
         </div>
-        <ConnectionButton href="http://127.0.0.1:5173/spotify/connect">Spotify</ConnectionButton>
-        <ConnectionButton href="http://127.0.0.1:5173/gmail/connect">Gmail</ConnectionButton>
-        <ConnectionButton href="">Google Search</ConnectionButton>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <ConnectionButton href="http://127.0.0.1:5173/spotify/connect">
+            {connectedSources.has('spotify') ? '✓ Spotify' : 'Spotify'}
+          </ConnectionButton>
+          <ConnectionButton href="http://127.0.0.1:5173/gmail/connect">
+            {connectedSources.has('gmail') ? '✓ Gmail' : 'Gmail'}
+          </ConnectionButton>
+          <ConnectionButton href="">
+            {connectedSources.has('search') ? '✓ Search' : 'Google Search'}
+          </ConnectionButton>
+        </div>
+        
+        {/* Manual refresh button */}
+        {personalityTree && (
+          <button
+            onClick={() => loadThemes(true)}
+            disabled={isLoadingThemes}
+            style={{
+              marginTop: '0.5rem',
+              padding: '0.5rem 1rem',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              color: 'white',
+              fontFamily: 'monospace',
+              fontSize: '0.75rem',
+              cursor: isLoadingThemes ? 'wait' : 'pointer',
+              opacity: isLoadingThemes ? 0.5 : 1,
+              borderRadius: '4px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              if (!isLoadingThemes) {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            }}
+          >
+            {isLoadingThemes ? 'Refreshing...' : '↻ Refresh'}
+          </button>
+        )}
 
         {/* Status Messages */}
         {isLoadingThemes && (
@@ -177,7 +228,7 @@ export default function App() {
               borderRadius: '4px',
             }}
           >
-            {'>'} Fetching data & analyzing...
+            {'>'} Analyzing connected sources...
           </div>
         )}
 
@@ -194,14 +245,13 @@ export default function App() {
               borderRadius: '4px',
             }}
           >
-            {'>'} Waiting for data sources...
+            {'>'} Connect data sources to begin
           </div>
         )}
 
         {personalityTree && !isLoadingThemes && (
           <div
             style={{
-              color: '#1DB954',
               fontFamily: 'monospace',
               fontSize: '0.75rem',
               marginTop: '0.5rem',
@@ -211,7 +261,33 @@ export default function App() {
               borderRadius: '4px',
             }}
           >
-            ✓ {personalityTree.nodes.length} themes discovered
+            <div style={{ color: '#1DB954', marginBottom: '0.25rem' }}>
+              ✓ {personalityTree.nodes.length} themes active
+            </div>
+            {connectedSources.size > 0 && (
+              <div style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.7rem' }}>
+                Sources: {Array.from(connectedSources).join(', ')}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Hint about connecting more sources */}
+        {personalityTree && !isLoadingThemes && connectedSources.size < 3 && (
+          <div
+            style={{
+              color: 'rgba(255, 255, 255, 0.4)',
+              fontFamily: 'monospace',
+              fontSize: '0.65rem',
+              marginTop: '0.5rem',
+              padding: '0.5rem',
+              background: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '4px',
+              fontStyle: 'italic',
+            }}
+          >
+            Connect more sources, then click Refresh
           </div>
         )}
       </div>

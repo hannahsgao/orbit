@@ -396,14 +396,13 @@ function getMockThemes() {
 
 // NEW: AI-powered theme extraction
 router.get('/spotify/themes', async (req, res) => {
-  const accessToken = getAccessToken(req);
-
-  // Handle mock mode
-  if (process.env.MOCK_MODE === 'true') {
-    return res.json(getMockThemes());
-  }
-
   try {
+    const accessToken = getAccessToken(req);
+
+    // Handle mock mode
+    if (process.env.MOCK_MODE === 'true') {
+      return res.json(getMockThemes());
+    }
     // Fetch all Spotify data in parallel
     const [topArtists, topTracks, playlists, recentlyPlayed] = await Promise.all([
       // Top Artists
@@ -495,7 +494,20 @@ router.get('/spotify/themes', async (req, res) => {
     });
   } catch (error: any) {
     logger.error({ error }, 'Failed to extract Spotify themes');
-    throw new AppError(500, `Failed to extract themes: ${error.message}`);
+    
+    // Check if it's an auth error
+    if (error.statusCode === 401 || error.message?.includes('No access token')) {
+      return res.status(401).json({
+        error: 'Spotify not connected',
+        message: 'Please authenticate with Spotify first',
+        connectUrl: '/spotify/connect'
+      });
+    }
+    
+    return res.status(500).json({
+      error: 'Failed to extract themes',
+      message: error.message || 'Unknown error'
+    });
   }
 });
 
