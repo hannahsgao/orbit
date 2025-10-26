@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { OrbitSystem } from './components/OrbitSystem';
 import { BouncingCow } from './components/BouncingCow';
+import { LandingPage } from './components/LandingPage';
 
 export default function App() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isTextFadingOut, setIsTextFadingOut] = useState(false);
-  const [isOverlayFading, setIsOverlayFading] = useState(false);
-  const [blinkOpacity, setBlinkOpacity] = useState(0.7);
-  const loadtime = 4000;
+  const [hasEnteredSolarSystem, setHasEnteredSolarSystem] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showSolarSystem, setShowSolarSystem] = useState(false);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -21,97 +20,51 @@ export default function App() {
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
 
-    // Start text fade-out after 4 blinks (2.0 seconds)
-    const textFadeTimer = setTimeout(() => {
-      setIsTextFadingOut(true);
-    }, 2000);
-
-    // Start overlay fade-out after text is completely gone (4.0 seconds)
-    const overlayFadeTimer = setTimeout(() => {
-      setIsOverlayFading(true);
-    }, loadtime - 1000);
-
-    // Complete loading after overlay fade completes
-    const loadTimer = setTimeout(() => {
-      setIsLoaded(true);
-    }, loadtime); // 4.0s + 1.6s fade duration
-
     return () => {
       window.removeEventListener('resize', updateDimensions);
-      clearTimeout(textFadeTimer);
-      clearTimeout(overlayFadeTimer);
-      clearTimeout(loadTimer);
     };
   }, []);
 
-  // Separate effect for blink animation
-  useEffect(() => {
-    const blinkInterval = setInterval(() => {
-      if (!isTextFadingOut) {
-        setBlinkOpacity(prev => prev === 0.7 ? 0 : 0.7);
-      }
-    }, 500);
+  const handleEnter = () => {
+    setIsTransitioning(true);
 
-    return () => clearInterval(blinkInterval);
-  }, [isTextFadingOut]);
+    // Start showing solar system content after landing page begins fading
+    setTimeout(() => {
+      setShowSolarSystem(true);
+    }, 600);
+
+    // Complete transition
+    setTimeout(() => {
+      setHasEnteredSolarSystem(true);
+      setIsTransitioning(false);
+    }, 1800);
+  };
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
-      {/* Clean cinematic loading overlay */}
-      {!isLoaded && (
+      {/* Landing page with fade out */}
+      {!hasEnteredSolarSystem && (
         <div
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%)',
-            zIndex: 9999,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontFamily: 'monospace',
-            opacity: isOverlayFading ? 0 : 1,
-            transform: isOverlayFading ? 'scale(1.05)' : 'scale(1)',
-            transition: 'all 1.6s cubic-bezier(0.23, 1, 0.32, 1)',
+            opacity: isTransitioning ? 0 : 1,
+            transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            pointerEvents: isTransitioning ? 'none' : 'auto',
           }}
         >
-          {/* Main title with simple fade and glow */}
-          <div
-            style={{
-              fontSize: 'clamp(2.5rem, 8vw, 5rem)',
-              fontWeight: '300',
-              textTransform: 'uppercase',
-              letterSpacing: '0.4em',
-              marginBottom: '3rem',
-              opacity: isTextFadingOut ? 0 : 1,
-              textShadow: '0 0 20px rgba(255, 255, 255, 0.5)',
-              transition: 'opacity 1s ease-out',
-            }}
-          >
-            MILKY WAY
-          </div>
-          
-          {/* Subtitle with JavaScript blink */}
-          <div
-            style={{
-              fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
-              letterSpacing: '0.15em',
-              textTransform: 'uppercase',
-              fontWeight: '300',
-              opacity: isTextFadingOut ? 0 : blinkOpacity,
-              transform: isTextFadingOut ? 'scale(0.8)' : 'scale(1)',
-              transition: 'all 1s ease-out',
-            }}
-          >
-            {'>'} INITIALIZING SOLAR SYSTEM...
-          </div>
+          <LandingPage onEnter={handleEnter} />
         </div>
       )}
 
+      {/* Solar system with fade in */}
+      {(showSolarSystem || hasEnteredSolarSystem) && (
+        <div
+          style={{
+            opacity: showSolarSystem ? 1 : 0,
+            transform: showSolarSystem ? 'scale(1)' : 'scale(1.05)',
+            transition: 'opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 2s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          <div className="min-h-screen bg-black overflow-hidden">
       {/* Main content */}
       <div className="absolute inset-0">
         {/* Starfield background */}
@@ -143,10 +96,13 @@ export default function App() {
         centerY={dimensions.height / 2} 
       />
 
-      <BouncingCow 
-        containerWidth={dimensions.width} 
-        containerHeight={dimensions.height} 
+      <BouncingCow
+        containerWidth={dimensions.width}
+        containerHeight={dimensions.height}
       />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
