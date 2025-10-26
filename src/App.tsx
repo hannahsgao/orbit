@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { OrbitSystem } from './components/OrbitSystem';
 import { BouncingCow } from './components/BouncingCow';
 import { LandingPage } from './components/LandingPage';
+import { ConnectionButton } from './components/ConnectionButton';
 
 export default function App() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -83,12 +84,26 @@ export default function App() {
         ))}
       </div>
 
-      <div className="relative z-10 p-8 pointer-events-none">
-        <div className="text-center mb-8">
-          <p className="text-white opacity-75" style={{ fontFamily: 'monospace' }}>
-            {'>'} Left-click planets to spawn satellites | Cmd+click to select | Cmd+drag for multi-select | Double-click to reset zoom | Click outside to zoom out | +/- keys to zoom
-          </p>
+      {/* Connection buttons in top left */}
+      <div className="absolute top-8 left-8 z-50 flex flex-col gap-3 pointer-events-auto">
+        <div
+          style={{
+            color: 'white',
+            fontFamily: 'monospace',
+            fontSize: '0.875rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.2em',
+            opacity: 0.75,
+            marginTop: '1.5rem',
+            marginLeft: '1.5rem',
+            marginBottom: '0.5rem',
+          }}
+        >
+          Connections
         </div>
+        <ConnectionButton href="">Spotify</ConnectionButton>
+        <ConnectionButton href="">Gmail</ConnectionButton>
+        <ConnectionButton href="">Google Search</ConnectionButton>
       </div>
 
       <OrbitSystem 
