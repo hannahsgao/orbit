@@ -5,11 +5,14 @@ interface PlanetProps {
   y: number;
   radius: number;
   color: string;
-  onClick: (event: React.MouseEvent) => void;
+  onClick: (e: React.MouseEvent<HTMLCanvasElement>) => void;
   isSelected?: boolean;
+  opacity?: number;
+  onMouseEnter?: (e: React.MouseEvent<HTMLCanvasElement>) => void;
+  onMouseLeave?: (e: React.MouseEvent<HTMLCanvasElement>) => void;
 }
 
-export function Planet({ x, y, radius, color, onClick, isSelected = false }: PlanetProps) {
+export function Planet({ x, y, radius, color, onClick, isSelected = false, opacity = 1, onMouseEnter, onMouseLeave }: PlanetProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -100,12 +103,15 @@ export function Planet({ x, y, radius, color, onClick, isSelected = false }: Pla
     <canvas
       ref={canvasRef}
       onClick={handleClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{
         position: 'absolute',
         left: x - radius,
         top: y - radius,
         cursor: 'pointer',
         imageRendering: 'pixelated',
+        opacity: opacity,
       }}
     />
   );
