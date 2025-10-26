@@ -892,7 +892,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
                     top: transformedPos.y - planet.planetRadius * zoom - 8,
                     color: '#fff',
                     fontFamily: 'VT323, monospace',
-                    fontSize: `${14 * zoom}px`,
+                    fontSize: '20px',
                     letterSpacing: '0.02em',
                     userSelect: 'none',
                     pointerEvents: 'none',
