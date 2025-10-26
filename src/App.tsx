@@ -5,7 +5,10 @@ import { BouncingCow } from './components/BouncingCow';
 export default function App() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isFadingOut, setIsFadingOut] = useState(false);
+  const [isTextFadingOut, setIsTextFadingOut] = useState(false);
+  const [isOverlayFading, setIsOverlayFading] = useState(false);
+  const [blinkOpacity, setBlinkOpacity] = useState(0.7);
+  const loadtime = 4000;
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -18,22 +21,39 @@ export default function App() {
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
 
-    // Start fade-out after 1.5 seconds
-    const fadeTimer = setTimeout(() => {
-      setIsFadingOut(true);
-    }, 1500);
+    // Start text fade-out after 4 blinks (2.0 seconds)
+    const textFadeTimer = setTimeout(() => {
+      setIsTextFadingOut(true);
+    }, 2000);
 
-    // Complete loading after fade completes
+    // Start overlay fade-out after text is completely gone (4.0 seconds)
+    const overlayFadeTimer = setTimeout(() => {
+      setIsOverlayFading(true);
+    }, loadtime - 1000);
+
+    // Complete loading after overlay fade completes
     const loadTimer = setTimeout(() => {
       setIsLoaded(true);
-    }, 3300); // 1.5s + 1.8s fade duration
+    }, loadtime); // 4.0s + 1.6s fade duration
 
     return () => {
       window.removeEventListener('resize', updateDimensions);
-      clearTimeout(fadeTimer);
+      clearTimeout(textFadeTimer);
+      clearTimeout(overlayFadeTimer);
       clearTimeout(loadTimer);
     };
   }, []);
+
+  // Separate effect for blink animation
+  useEffect(() => {
+    const blinkInterval = setInterval(() => {
+      if (!isTextFadingOut) {
+        setBlinkOpacity(prev => prev === 0.7 ? 0 : 0.7);
+      }
+    }, 500);
+
+    return () => clearInterval(blinkInterval);
+  }, [isTextFadingOut]);
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
@@ -46,7 +66,7 @@ export default function App() {
             left: 0,
             width: '100%',
             height: '100%',
-            background: '#000000',
+            background: 'linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%)',
             zIndex: 9999,
             display: 'flex',
             flexDirection: 'column',
@@ -54,11 +74,12 @@ export default function App() {
             justifyContent: 'center',
             color: 'white',
             fontFamily: 'monospace',
-            opacity: isFadingOut ? 0 : 1,
-            transition: 'opacity 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            opacity: isOverlayFading ? 0 : 1,
+            transform: isOverlayFading ? 'scale(1.05)' : 'scale(1)',
+            transition: 'all 1.6s cubic-bezier(0.23, 1, 0.32, 1)',
           }}
         >
-          {/* Main title */}
+          {/* Main title with simple fade and glow */}
           <div
             style={{
               fontSize: 'clamp(2.5rem, 8vw, 5rem)',
@@ -66,21 +87,24 @@ export default function App() {
               textTransform: 'uppercase',
               letterSpacing: '0.4em',
               marginBottom: '3rem',
-              opacity: isFadingOut ? 0 : 1,
-              transition: 'opacity 1.2s ease-out 0.3s',
+              opacity: isTextFadingOut ? 0 : 1,
+              textShadow: '0 0 20px rgba(255, 255, 255, 0.5)',
+              transition: 'opacity 1s ease-out',
             }}
           >
             MILKY WAY
           </div>
           
-          {/* Subtitle */}
+          {/* Subtitle with JavaScript blink */}
           <div
             style={{
               fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
-              opacity: 0.4,
               letterSpacing: '0.15em',
               textTransform: 'uppercase',
               fontWeight: '300',
+              opacity: isTextFadingOut ? 0 : blinkOpacity,
+              transform: isTextFadingOut ? 'scale(0.8)' : 'scale(1)',
+              transition: 'all 1s ease-out',
             }}
           >
             {'>'} INITIALIZING SOLAR SYSTEM...
