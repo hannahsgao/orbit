@@ -9,7 +9,6 @@ import healthRouter from './routes/health';
 import authRouter from './routes/auth';
 import spotifyRouter from './routes/spotify';
 import mcpRouter from './routes/mcp';
-import lettaRouter from './routes/letta';
 import gmailRouter from './routes/gmail';
 
 dotenv.config();
@@ -31,7 +30,6 @@ app.use(healthRouter);
 app.use(authRouter);
 app.use(spotifyRouter);
 app.use(mcpRouter);
-app.use(lettaRouter);
 app.use(gmailRouter);
 
 app.use(errorMiddleware);

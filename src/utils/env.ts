@@ -7,7 +7,7 @@ interface EnvConfig {
   SPOTIFY_CLIENT_SECRET?: string;
   SPOTIFY_REDIRECT_URI?: string;
   COMPOSIO_API_KEY?: string;
-  LETTA_API_KEY?: string;
+  OPENAI_API_KEY?: string;
   MOCK_MODE?: string;
 }
 
@@ -43,7 +43,7 @@ export function getEnv(): EnvConfig {
     SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
     SPOTIFY_REDIRECT_URI: process.env.SPOTIFY_REDIRECT_URI,
     COMPOSIO_API_KEY: process.env.COMPOSIO_API_KEY,
-    LETTA_API_KEY: process.env.LETTA_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     MOCK_MODE: process.env.MOCK_MODE,
   };
 }
