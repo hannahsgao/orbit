@@ -1,0 +1,2 @@
+[console_scripts]
+themescope = themescope.cli:main

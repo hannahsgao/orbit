@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: themescope
+Version: 0.1.0
+Summary: Analyze Chrome history to identify personal themes over time
+Requires-Python: >=3.9
+Requires-Dist: pandas>=2.2
+Requires-Dist: numpy>=1.26
+Requires-Dist: scikit-learn>=1.5
+Requires-Dist: tqdm>=4.66
+Requires-Dist: rich>=13.7
+Requires-Dist: click>=8.1
+Requires-Dist: duckdb>=1.0
+Requires-Dist: jinja2>=3.1
+Provides-Extra: embed
+Requires-Dist: sentence-transformers>=2.7; extra == "embed"
+Provides-Extra: llm
+Requires-Dist: openai>=1.14; extra == "llm"
+Provides-Extra: server
+Requires-Dist: fastapi>=0.116; extra == "server"
+Requires-Dist: uvicorn>=0.30; extra == "server"

@@ -1,0 +1,94 @@
+{
+  "subthemes": [
+    {
+      "label": "Future Research Directions",
+      "rationale": "Explores emerging trends and potential future areas of research in deep learning and machine learning.",
+      "sources": [
+        {
+          "title": "Future Research Directions in Deep Learning and Machine Learning",
+          "url": "https://medium.com/@justygwen/exploring-the-frontier-future-research-directions-in-deep-learning-and-machine-learning-aa9acb1b376b"
+        },
+        {
+          "title": "Relevant AI research topics",
+          "url": "https://chatgpt.com/c/68e804df-475c-8333-ae17-37fe16f293d9"
+        },
+        {
+          "title": "Research project proposals",
+          "url": "https://chatgpt.com/c/68d57998-661c-832e-9257-732536947935"
+        }
+      ]
+    },
+    {
+      "label": "Training Techniques",
+      "rationale": "Focuses on innovative methods for training neural networks and improving their performance.",
+      "sources": [
+        {
+          "title": "NoProp: Training Neural Networks without Full Back-propagation or Full Forward-propagation",
+          "url": "https://arxiv.org/pdf/2503.24322"
+        },
+        {
+          "title": "Decoupled Neural Interfaces Using Synthetic Gradients",
+          "url": "https://deepmind.google/discover/blog/decoupled-neural-interfaces-using-synthetic-gradients/"
+        },
+        {
+          "title": "Learning explanatory rules from noisy data",
+          "url": "https://deepmind.google/discover/blog/learning-explanatory-rules-from-noisy-data/"
+        }
+      ]
+    },
+    {
+      "label": "Benchmarking and Evaluation",
+      "rationale": "Covers methodologies for evaluating the performance of deep learning models.",
+      "sources": [
+        {
+          "title": "Navigating the LLM Benchmark Boom: A Comprehensive Catalogue",
+          "url": "https://www.holisticai.com/blog/navigating-llm-benchmark"
+        },
+        {
+          "title": "Benchmark Self-Evolving: A Multi-Agent Framework for Dynamic LLM Evaluation",
+          "url": "https://aclanthology.org/2025.coling-main.223/"
+        },
+        {
+          "title": "LingBench++: A Linguistically-Informed Benchmark and Reasoning Framework for Multi-Step and Cross-Cultural Inference with LLMs",
+          "url": "https://api.semanticscholar.org/CorpusId:280017603"
+        }
+      ]
+    },
+    {
+      "label": "Applications of Deep Learning",
+      "rationale": "Explores practical applications of deep learning techniques in various domains.",
+      "sources": [
+        {
+          "title": "AI research hiring focus",
+          "url": "https://chatgpt.com/c/68ca26d1-2560-8322-9dfa-9c25ad25d7d2"
+        },
+        {
+          "title": "AI startup pitch ideas",
+          "url": "https://chatgpt.com/c/68a7ba45-c494-8332-855a-2eeabf2880eb"
+        },
+        {
+          "title": "AI Work Management & Productivity Tools",
+          "url": "https://slack.com/"
+        }
+      ]
+    },
+    {
+      "label": "Research Internships and Opportunities",
+      "rationale": "Information on internships and job opportunities in the field of AI and deep learning.",
+      "sources": [
+        {
+          "title": "Research Internships - Vector Institute for Artificial Intelligence",
+          "url": "https://vectorinstitute.ai/programs/research-internships/"
+        },
+        {
+          "title": "Summer 2026 AI Research Intern at Intuit",
+          "url": "https://jobs.intuit.com/job/mountain-view/summer-2026-ai-research-intern/27595/86818837728?utm_source=twitter.com&utm_medium=social_post&utm_campaign=Intuit_social"
+        },
+        {
+          "title": "Student Researcher Program - Google DeepMind",
+          "url": "https://deepmind.google/about/student-researcher-program/"
+        }
+      ]
+    }
+  ]
+}

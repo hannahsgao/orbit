@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+setup.cfg
+src/themescope/__init__.py
+src/themescope/api.py
+src/themescope/api_server.py
+src/themescope/cli.py
+src/themescope/history.py
+src/themescope/nlp.py
+src/themescope/persona.py
+src/themescope/utils.py
+src/themescope.egg-info/PKG-INFO
+src/themescope.egg-info/SOURCES.txt
+src/themescope.egg-info/dependency_links.txt
+src/themescope.egg-info/entry_points.txt
+src/themescope.egg-info/requires.txt
+src/themescope.egg-info/top_level.txt

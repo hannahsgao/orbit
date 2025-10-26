@@ -1,0 +1,41 @@
+[project]
+name = "themescope"
+version = "0.1.0"
+description = "Analyze Chrome history to identify personal themes over time"
+requires-python = ">=3.9"
+dependencies = [
+  "pandas>=2.2",
+  "numpy>=1.26",
+  "scikit-learn>=1.5",
+  "tqdm>=4.66",
+  "rich>=13.7",
+  "click>=8.1",
+  "duckdb>=1.0",
+  "jinja2>=3.1"
+]
+
+[project.scripts]
+themescope = "themescope.cli:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["themescope*"]
+
+[project.optional-dependencies]
+embed = [
+  "sentence-transformers>=2.7",
+]
+llm = [
+  "openai>=1.14",
+]
+server = [
+  "fastapi>=0.116",
+  "uvicorn>=0.30",
+]
