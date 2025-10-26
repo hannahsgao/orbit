@@ -173,7 +173,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
   // Track which labels should be visible (anchor and its direct children, or roots in root view)
   useEffect(() => {
     const anchorId: string | null = focusedPlanetId;
-    const isRootView = !anchorId && selectedPlanetIds.size === 0 && Math.abs(pan.x) < 1 && Math.abs(pan.y) < 1 && zoom <= 1.05;
+    const isRootView = !anchorId && selectedPlanetIds.size === 0 && Math.hypot(pan.x, pan.y) < 20 && zoom <= 1.2;
     let labelIds: Set<string>;
     if (anchorId) {
       const anchor = planets.find(p => p.id === anchorId);
@@ -188,11 +188,18 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
     } else {
       labelIds = new Set<string>();
     }
-    setCurrentLabelIds(labelIds);
-    // Reset sequence when the set of label ids changes
-    setLabelSeqIndex(0);
-    setLabelSeqNextAt(performance.now());
-  }, [focusedPlanetId, selectedPlanetIds, planets, pan.x, pan.y, zoom]);
+    const setsEqual = (a: Set<string>, b: Set<string>) => {
+      if (a.size !== b.size) return false;
+      for (const v of a) if (!b.has(v)) return false;
+      return true;
+    };
+    if (!setsEqual(labelIds, currentLabelIds)) {
+      setCurrentLabelIds(labelIds);
+      // Reset sequence when the set of label ids changes
+      setLabelSeqIndex(0);
+      setLabelSeqNextAt(performance.now());
+    }
+  }, [focusedPlanetId, selectedPlanetIds, planets, pan.x, pan.y, zoom, currentLabelIds]);
 
   // Mostly sequential flashing: cycle through labels, showing one at a time with longer on-times
   useEffect(() => {
@@ -243,29 +250,28 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
 
         // Launch a new label if we have room (less than 2 visible) and it's time
         if (visibleIds.length < 2 && now >= labelSeqNextAt) {
-          // Find the next id mostly sequentially, skipping those already visible
-          let idx = (labelSeqIndex + 1) % ids.length;
-          if (Math.random() < 0.15 && ids.length > 2) {
-            idx = (idx + 1) % ids.length;
+          // Choose randomly from non-visible ids to increase randomness
+          const availableIds = ids.filter(id => !visibleIds.includes(id));
+          if (availableIds.length > 0) {
+            const randIdx = Math.floor(Math.random() * availableIds.length);
+            const showId = availableIds[randIdx];
+            // More varied visible duration
+            const visibleDur = 450 + Math.random() * 1200; // ~0.45s - 1.65s
+            next[showId] = {
+              visible: true,
+              nextAt: now + visibleDur,
+              mode: 'visible'
+            };
+            // Randomized (Poisson-like) gap before next launch for overlap variability
+            const u = Math.random();
+            const expGap = -Math.log(1 - u) * 600; // mean ~600ms
+            let launchGap = 150 + expGap; // base + exponential
+            if (Math.random() < 0.3) launchGap *= 0.4; // occasionally tighter clustering
+
+            nextIdxState = ids.indexOf(showId);
+            nextLaunchAtState = now + launchGap;
+            launched = true;
           }
-          // Advance until we find a non-visible id (to encourage variety)
-          let attempts = 0;
-          while (attempts < ids.length && visibleIds.includes(ids[idx])) {
-            idx = (idx + 1) % ids.length;
-            attempts++;
-          }
-          const showId = ids[idx];
-          const visibleDur = 900 + Math.random() * 1200; // 0.9s - 2.1s
-          next[showId] = {
-            visible: true,
-            nextAt: now + visibleDur,
-            mode: 'visible'
-          };
-          // Stagger next launch so we get overlap
-          const launchGap = 400 + Math.random() * 900; // 0.4s - 1.3s
-          nextIdxState = idx;
-          nextLaunchAtState = now + launchGap;
-          launched = true;
         }
 
         return next;
@@ -805,7 +811,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
           // Only anchor and its direct children are fully opaque; others dimmed
           let fullOpacityIds: Set<string> | null = null;
           // Detect root view (most zoomed out and centered): treat roots as direct children of center
-          const isRootView = !anchorId && selectedPlanetIds.size === 0 && Math.abs(pan.x) < 1 && Math.abs(pan.y) < 1 && zoom <= 1.05;
+          const isRootView = !anchorId && selectedPlanetIds.size === 0 && Math.hypot(pan.x, pan.y) < 20 && zoom <= 1.2;
           if (anchorId) {
             fullOpacityIds = new Set<string>([anchorId]);
             const anchor = planets.find(p => p.id === anchorId);
@@ -840,7 +846,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
         {/* Labels for anchor and its direct children */}
         {(() => {
           const anchorId: string | null = focusedPlanetId;
-          const isRootView = !anchorId && selectedPlanetIds.size === 0 && Math.abs(pan.x) < 1 && Math.abs(pan.y) < 1 && zoom <= 1.05;
+          const isRootView = !anchorId && selectedPlanetIds.size === 0 && Math.hypot(pan.x, pan.y) < 20 && zoom <= 1.2;
           let labelIds: Set<string>;
           if (anchorId) {
             const anchor = planets.find(p => p.id === anchorId);
