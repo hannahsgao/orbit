@@ -114,7 +114,7 @@ Extract 2-3 distinct themes that paint a rich picture of who this person is thro
         { role: 'user', content: userPrompt },
       ],
       response_format: zodResponseFormat(ThemesOutputSchema, 'themes'),
-      temperature: 0.7,
+      temperature: 0.4,
     });
 
     const response = completion.choices[0].message;

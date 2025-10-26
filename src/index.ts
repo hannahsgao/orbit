@@ -5,7 +5,6 @@ import { corsOptions } from './utils/cors';
 import { errorMiddleware } from './utils/errors';
 import { logger } from './utils/logger';
 import { validateEnv } from './utils/env';
-import healthRouter from './routes/health';
 import authRouter from './routes/auth';
 import spotifyRouter from './routes/spotify';
 import gmailRouter from './routes/gmail';
@@ -25,7 +24,6 @@ app.use((req, _res, next) => {
   next();
 });
 
-app.use(healthRouter);
 app.use(authRouter);
 app.use(spotifyRouter);
 app.use(gmailRouter);

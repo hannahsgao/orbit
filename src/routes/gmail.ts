@@ -3,13 +3,12 @@ import {
   initiateConnection,
   getConnectedAccount,
   listConnectedAccounts,
-  fetchGmailEmails,
-  listGmailLabels,
+  fetchGmailEmails
 } from '../services/composio';
 import { AppError } from '../utils/errors';
 import { logger } from '../utils/logger';
-import { redactEmail, parseFromHeader, shouldRedactSubject, computeTopTokens } from '../utils/redact';
-import type { GmailMessageMeta, GmailAggregates } from '../schemas/gmail';
+import { EmailCleaner } from '../utils/email-cleaner';
+import { extractGmailThemes } from '../services/gmail_themes';
 
 const router = Router();
 
@@ -143,6 +142,7 @@ router.get('/gmail/status', async (req, res) => {
 // Fetch Gmail messages
 router.get('/gmail/messages', async (req, res) => {
   const userId = (req.query.userId as string) || getUserId(req);
+  const includeHtml = req.query.includeHtml === 'true';
 
   try {
     // Get connected account
@@ -158,37 +158,24 @@ router.get('/gmail/messages', async (req, res) => {
       throw new AppError(500, result.error || 'Failed to fetch emails');
     }
 
-    // Parse and format messages
+    // Process and clean emails
     const rawMessages = result.data?.messages || [];
-    const messages: GmailMessageMeta[] = [];
+    const emailCleaner = new EmailCleaner();
+    const processedEmails = emailCleaner.processEmails(rawMessages);
 
-    for (const msg of rawMessages) {
-      const subject = msg.subject || '(no subject)';
+    // Optionally exclude HTML content to reduce payload size
+    const messages = includeHtml
+      ? processedEmails
+      : processedEmails.map(({ htmlContent, ...rest }) => rest);
 
-      // Skip if should redact
-      if (shouldRedactSubject(subject)) {
-        continue;
-      }
-
-      const from = msg.from || '';
-      const { name: fromName, email: fromEmail } = parseFromHeader(from);
-
-      messages.push({
-        id: msg.id,
-        threadId: msg.threadId || msg.id,
-        subject,
-        fromName,
-        fromEmail: redactEmail(fromEmail),
-        date: msg.date || new Date().toISOString(),
-        labels: msg.labelIds || [],
-      });
-    }
+    logger.info({ userId, count: messages.length }, 'Processed Gmail messages');
 
     return res.json({
       source: 'gmail',
       provider: 'composio',
       fetchedAt: new Date().toISOString(),
       windowDays: 90,
+      count: messages.length,
       messages,
     });
   } catch (error) {
@@ -200,8 +187,8 @@ router.get('/gmail/messages', async (req, res) => {
   }
 });
 
-// Get Gmail summary/aggregates
-router.get('/gmail/summary', async (req, res) => {
+// Extract Gmail themes using AI
+router.get('/gmail/themes', async (req, res) => {
   const userId = (req.query.userId as string) || getUserId(req);
 
   try {
@@ -218,89 +205,38 @@ router.get('/gmail/summary', async (req, res) => {
       throw new AppError(500, result.error || 'Failed to fetch emails');
     }
 
-    // Parse messages
+    // Process emails
     const rawMessages = result.data?.messages || [];
-    const messages: Array<{ subject: string; from: string }> = [];
+    const emailCleaner = new EmailCleaner();
+    const processedEmails = emailCleaner.processEmails(rawMessages);
 
-    for (const msg of rawMessages) {
-      const subject = msg.subject || '(no subject)';
-      if (shouldRedactSubject(subject)) {
-        continue;
-      }
-      messages.push({
-        subject,
-        from: msg.from || '',
-      });
+    if (processedEmails.length === 0) {
+      throw new AppError(400, 'No emails found to analyze. Connect Gmail and ensure you have emails in your inbox.');
     }
 
-    // Compute aggregates
-    const senderCounts = new Map<string, number>();
-    for (const msg of messages) {
-      const { name, email } = parseFromHeader(msg.from);
-      const senderKey = `${name} <${redactEmail(email)}>`;
-      senderCounts.set(senderKey, (senderCounts.get(senderKey) || 0) + 1);
-    }
+    logger.info({ userId, emailCount: processedEmails.length }, 'Extracting Gmail themes');
 
-    const topSenders = Array.from(senderCounts.entries())
-      .map(([sender, count]) => ({ sender, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-
-    const subjects = messages.map(m => m.subject);
-    const topicTokens = computeTopTokens(subjects, 20);
-
-    const windowDays = 90;
-    const cadencePerWeek = (messages.length / windowDays) * 7;
-
-    const aggregates: GmailAggregates = {
-      topSenders,
-      topicTokens,
-      cadencePerWeek: Math.round(cadencePerWeek * 10) / 10,
-    };
+    // Extract themes using AI
+    const themes = await extractGmailThemes({
+      emails: processedEmails,
+      totalCount: processedEmails.length,
+      windowDays: 90,
+    });
 
     return res.json({
       source: 'gmail',
       provider: 'composio',
-      fetchedAt: new Date().toISOString(),
-      windowDays,
-      aggregates,
+      analyzedAt: new Date().toISOString(),
+      emailsAnalyzed: processedEmails.length,
+      windowDays: 90,
+      themes: themes.themes,
     });
   } catch (error) {
-    logger.error({ error, userId }, 'Failed to get Gmail summary');
+    logger.error({ error, userId }, 'Failed to extract Gmail themes');
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError(500, 'Failed to get Gmail summary');
-  }
-});
-
-// Get Gmail labels
-router.get('/gmail/labels', async (req, res) => {
-  const userId = (req.query.userId as string) || getUserId(req);
-
-  try {
-    const account = await getConnectedAccount(userId, 'gmail');
-    if (!account) {
-      throw new AppError(401, 'Gmail not connected. Use POST /gmail/connect first.');
-    }
-
-    const result = await listGmailLabels(userId, account.id);
-
-    if (!result.successful) {
-      throw new AppError(500, result.error || 'Failed to fetch labels');
-    }
-
-    return res.json({
-      source: 'gmail',
-      provider: 'composio',
-      labels: result.data?.labels || [],
-    });
-  } catch (error) {
-    logger.error({ error, userId }, 'Failed to fetch Gmail labels');
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError(500, 'Failed to fetch Gmail labels');
+    throw new AppError(500, 'Failed to extract Gmail themes');
   }
 });
 

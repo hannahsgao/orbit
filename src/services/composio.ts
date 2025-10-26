@@ -318,8 +318,7 @@ export async function fetchGmailEmails(
   entityId: string,
   connectedAccountId: string,
   query?: string,
-  maxResults: number = 20, // Reduced to 20 to avoid "response too large" errors
-  includePayload: boolean = true // Default to false - get metadata only
+  maxResults: number = 30, 
 ): Promise<any> {
   return executeTool({
     entityId,
@@ -336,65 +335,3 @@ export async function fetchGmailEmails(
     },
   });
 }
-
-export async function listGmailLabels(
-  entityId: string,
-  connectedAccountId: string
-): Promise<any> {
-  return executeTool({
-    entityId,
-    connectedAccountId,
-    appName: 'gmail',
-    actionName: 'gmail_list_labels', // v3 uses lowercase snake_case
-    input: {
-      user_id: 'me', // snake_case for v3 parameters
-    },
-  });
-}
-
-export async function sendGmailEmail(
-  entityId: string,
-  connectedAccountId: string,
-  to: string,
-  subject: string,
-  body: string,
-  isHtml: boolean = false,
-  cc?: string[],
-  bcc?: string[]
-): Promise<any> {
-  return executeTool({
-    entityId,
-    connectedAccountId,
-    appName: 'gmail',
-    actionName: 'gmail_send_email',
-    input: {
-      recipient_email: to,
-      subject,
-      body,
-      is_html: isHtml,
-      cc,
-      bcc,
-      user_id: 'me',
-    },
-  });
-}
-
-export async function searchGmailEmails(
-  entityId: string,
-  connectedAccountId: string,
-  query: string,
-  maxResults: number = 10
-): Promise<any> {
-  return executeTool({
-    entityId,
-    connectedAccountId,
-    appName: 'gmail',
-    actionName: 'gmail_search_emails',
-    input: {
-      query,
-      max_results: maxResults,
-      user_id: 'me',
-    },
-  });
-}
-
