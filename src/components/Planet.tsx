@@ -38,6 +38,10 @@ export function Planet({ x, y, radius, color, imageAsset, onClick, isSelected = 
         alignItems: 'center',
         justifyContent: 'center',
         imageRendering: 'pixelated',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
       }}
     >
       {/* Fallback to programmatic rendering if PNG fails to load */}
@@ -57,6 +61,11 @@ export function Planet({ x, y, radius, color, imageAsset, onClick, isSelected = 
             imageRendering: 'pixelated',
             outline: isSelected ? '2px solid #FFFFFF' : 'none',
             outlineOffset: isSelected ? '1px' : '0px',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            MozUserSelect: 'none',
+            msUserSelect: 'none',
+            pointerEvents: 'none',
           }}
           onError={() => setImageError(true)}
         />
@@ -155,6 +164,11 @@ function FallbackPlanetCanvas({ radius, color, isSelected }: { radius: number; c
         width: '100%',
         height: '100%',
         imageRendering: 'pixelated',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
+        pointerEvents: 'none',
       }}
     />
   );
