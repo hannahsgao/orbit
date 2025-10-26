@@ -318,7 +318,7 @@ export async function fetchGmailEmails(
   entityId: string,
   connectedAccountId: string,
   query?: string,
-  maxResults: number = 30, 
+  maxResults: number = 100, 
 ): Promise<any> {
   return executeTool({
     entityId,
@@ -326,9 +326,9 @@ export async function fetchGmailEmails(
     appName: 'gmail',
     actionName: 'gmail_fetch_emails', // v3 uses lowercase snake_case
     input: {
-      query: query || `newer_than:30d -category:promotions -category:social`,
+      query: query || `newer_than:90d -category:promotions -category:social`,
       max_results: maxResults, // snake_case for v3 parameters
-      include_payload: true, // snake_case - if true, returns full email content
+      include_payload: false, // snake_case - if true, returns full email content
       ids_only: false, // snake_case for v3 parameters
       user_id: 'me', // snake_case for v3 parameters
       verbose: true, // Get basic metadata even with include_payload=false

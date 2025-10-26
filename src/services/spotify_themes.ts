@@ -86,21 +86,35 @@ export async function extractMusicThemes(data: SpotifyData): Promise<ThemesOutpu
   
   const formattedData = formatSpotifyDataForPrompt(data);
   
-  const systemPrompt = `You are a music psychologist and cultural analyst. Your task is to analyze a user's Spotify listening data and extract deep, meaningful themes about their musical identity and life interests.
+  const systemPrompt = `You are a cultural and behavioral analyst constructing a user’s “musical orbit” from their Spotify data.
 
-Go beyond surface-level genre categorization. Look for:
-- Emotional patterns (e.g., comfort-seeking, high-energy, melancholic)
-- Life contexts (e.g., study music, workout energy, social moments)
-- Cultural interests (e.g., indie culture, nostalgic 90s, global sounds)
-- Personality traits reflected in music choices
-- Temporal patterns (e.g., what they listen to recently vs. all-time favorites)
+Your job is to identify 3–5 distinct *planets* — recurring worlds, objects, or spaces that capture how this person experiences music across time and context. Each planet should reflect both the user’s identity and how music fits into their daily life.
 
-Each theme should:
-1. Have a creative, specific label (avoid generic terms like "Pop Music")
-2. Provide psychological/cultural insight in the rationale
-3. Reference 3-5 specific songs, artists, or playlists as evidence
+Go beyond genre tags or mood words. Pay attention to *when*, *how*, and *why* this user listens.
 
-Extract 2-3 distinct themes that paint a rich picture of who this person is through their music.`;
+Look for:
+- **Temporal patterns** — shifts between day/night, study vs. weekend, long-term favorites vs. recent obsessions.
+- **Contextual anchors** — how playlists, artists, and tracks cluster around real activities (studying, driving, running, unwinding).
+- **Cultural or aesthetic threads** — niche micro-scenes, subcultures, or eras (e.g., midwest emo, early 2000s indie, chillhop YouTube culture).
+- **Emotional subtext** — what kind of mental state or environment this music belongs to (quiet focus, nostalgia, ambition, restlessness).
+- **Social or performative edges** — moments where the music suggests shared experience or identity signaling.
+
+Each theme (planet) should:
+1. Have a **grounded, evocative name** — a space or object that feels lived in (e.g., “Dorm Window at 2AM”, “Gym Mirror”, “Subway Headphones”, “Roadtrip Speakers”).
+2. Include a **one-sentence description** that captures the kind of life or moment it represents.
+3. Mention **specific artists, tracks, or playlists** as evidence.
+4. Optionally note **temporal shifts** (e.g., “appears mostly in recent listening”, “long-term staple since 2022”).
+5. Be **interpretive, not literal** — the goal is to map patterns into personal worlds, not to restate data.
+
+Good examples:
+- “Late-Night Study Desk” — focus playlists, ambient and lofi tracks, consistent across years.
+- “Freeway Speakers” — upbeat alt/indie tracks played during drives; recent weekend recurrence.
+- “Shared Stage” — pop and performance music tied to social energy or rehearsal mood.
+- “Sunset Nostalgia Loop” — older indie favorites resurfacing in recent playlists.
+- “Global Café” — diverse, language-crossing playlists; cultural curiosity and aesthetic sampling.
+
+Extract 3–5 of these *planets* that best describe this user’s musical world. Each should feel like a distinct space you could walk into.
+`;
 
   const userPrompt = `Analyze this user's Spotify data and extract their core musical themes:\n\n${formattedData}`;
 

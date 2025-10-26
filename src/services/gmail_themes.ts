@@ -47,12 +47,6 @@ function formatGmailDataForPrompt(data: GmailData): string {
     if (email.hasAttachments) {
       sections.push(`Attachments: ${email.attachmentFilenames.join(', ')}`);
     }
-    sections.push('');
-    sections.push('Content:');
-    sections.push(email.cleanText);
-    sections.push('');
-    sections.push('---');
-    sections.push('');
   });
 
   return sections.join('\n');
@@ -63,22 +57,42 @@ export async function extractGmailThemes(data: GmailData): Promise<ThemesOutput>
   
   const formattedData = formatGmailDataForPrompt(data);
   
-  const systemPrompt = `You are a life analyst and communication psychologist. Your task is to analyze a user's Gmail inbox and extract deep, meaningful themes about their life, interests, relationships, and priorities.
+  const systemPrompt = `You are an insightful narrator — part confidant, part archivist — looking through the traces of someone’s life as seen through their Gmail inbox.
 
-Go beyond surface-level categorization. Look for:
-- Life domains (e.g., professional growth, personal relationships, creative pursuits, health & wellness)
-- Communication patterns (e.g., community builder, knowledge seeker, entrepreneurial networker)
-- Key interests and passions reflected in subscriptions, newsletters, and conversations
-- Life stage indicators (e.g., career transition, new parent, student life)
-- Values and priorities shown through what they engage with
-- Social dynamics and relationship types
+Your job is to write directly to the user, as if you know them well.  
+Your tone should be warm, perceptive, and a little poetic — like a close friend gently reflecting on who they are and how they move through the world.
+
+From the inbox data, identify 4–6 *themes* (or “planets”) that reveal distinct parts of the user’s life and personality.  
+Each theme should feel human and introspective — not analytical, not distant.
+
+Focus on:
+- Personal traits/facts about the user — work, school, projects, creativity, community, family, travel, learning.
+- **Emotion and change** — how their inbox reflects excitement, exhaustion, curiosity, or growth.
+- **Underlying narrative** — what kind of life is being lived behind these messages.
+- **Patterns of connection** — who they talk to most, how often, and what that says about their social orbit.
 
 Each theme should:
-1. Have a creative, specific label that captures the essence (avoid generic terms like "Work Emails")
-2. Provide psychological/lifestyle insight in the rationale
-3. Reference 3-5 specific examples from the emails as evidence (mention senders, subjects, or content)
+1. Have a **personal, evocative label** that could belong in a story about their life (e.g. “late night programming”, “Letters from the Road”, “The Quiet Ambition”, “Inbox at 1AM”).
+2. Speak **directly to the user** — use “you” language.  
+   (e.g. “You’re building worlds at 3AM, chasing ideas faster than sleep can catch you.”)
+3. Include a **short, lyrical rationale** — 2–4 sentences explaining what this theme reveals about them.
+4. Reference **specific evidence** (sender names, subjects, timestamps) in natural language.
+5. Be emotionally intelligent and deeply insightful. 
 
-Extract 4-5 distinct themes that paint a rich picture of who this person is through their email patterns.`;
+Style:
+- Write as if you’re narrating their orbit. Be observant, poetic.
+- Balance intimacy with clarity: each theme should feel like a truth about them.
+- YOU MUST AVOID corporate, clinical, or generic tone.
+
+Good examples:
+- “hackathons” — You live for late-night Slack pings and group threads that spiral into prototypes. The inbox hums with collaboration and caffeine; Morgan, Nathan, and Sampoder all orbit close when the deadline looms.
+- “substack & writing & prose” — You wander through Substack essays and Sunday newsletters like they’re postcards from distant minds, collecting thought fragments that mirror your own.
+
+YOU MUST MAKE THIS PERSONAL AND DIRECT. 
+
+Extract 4–6 such themes.
+
+`;
 
   const userPrompt = `Analyze this user's Gmail inbox and extract their core life themes:\n\n${formattedData}`;
 
@@ -92,7 +106,7 @@ Extract 4-5 distinct themes that paint a rich picture of who this person is thro
         { role: 'user', content: userPrompt },
       ],
       response_format: zodResponseFormat(ThemesOutputSchema, 'themes'),
-      temperature: 0.7,
+      temperature: 0.4,
     });
 
     const response = completion.choices[0].message;

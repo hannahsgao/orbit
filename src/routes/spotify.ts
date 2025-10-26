@@ -1,7 +1,10 @@
 import { Router } from 'express';
-import { spotifyGet, spotifyPaginate, SPOTIFY_API_BASE } from '../services/spotify';
+import { randomBytes } from 'crypto';
+import { spotifyGet, spotifyPaginate, SPOTIFY_API_BASE, exchangeCodeForTokens } from '../services/spotify';
 import { extractMusicThemes } from '../services/spotify_themes';
+import { tokenStore } from '../services/tokens';
 import { AppError } from '../utils/errors';
+import { logger } from '../utils/logger';
 import {
   UserProfileSchema,
   ArtistSchema,
@@ -16,6 +19,140 @@ import {
 } from '../schemas/spotify';
 
 const router = Router();
+
+const SCOPES = [
+  'user-read-email',
+  'user-top-read',
+  'playlist-read-private',
+  'user-read-recently-played',
+].join(' ');
+
+// Spotify OAuth - Initiate connection
+router.get('/spotify/connect', (_req, res) => {
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
+
+  if (!clientId || !redirectUri) {
+    throw new AppError(500, 'Missing Spotify configuration');
+  }
+
+  const state = randomBytes(16).toString('hex');
+  res.cookie('spotify_auth_state', state, {
+    httpOnly: true,
+    maxAge: 5 * 60 * 1000, // 5 minutes
+    sameSite: 'lax',
+    path: '/',
+  });
+
+  logger.info({ state }, 'Setting auth state cookie');
+
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: clientId,
+    scope: SCOPES,
+    redirect_uri: redirectUri,
+    state,
+  });
+
+  return res.redirect(`https://accounts.spotify.com/authorize?${params.toString()}`);
+});
+
+// Spotify OAuth - Callback
+router.get('/spotify/callback', async (req, res) => {
+  const { code, state, error } = req.query;
+  const storedState = req.cookies.spotify_auth_state;
+
+  logger.info({ 
+    receivedState: state, 
+    storedState, 
+    allCookies: Object.keys(req.cookies),
+    hasCode: !!code 
+  }, 'OAuth callback received');
+
+  if (error) {
+    logger.error({ error }, 'Spotify authorization error');
+    return res.status(400).json({ error: 'Authorization failed' });
+  }
+
+  if (!state || state !== storedState) {
+    logger.error({ state, storedState }, 'State mismatch');
+    return res.status(400).json({ 
+      error: 'State mismatch',
+      details: `Received: ${state}, Expected: ${storedState}`,
+      hint: 'Make sure you access the server via 127.0.0.1, not localhost'
+    });
+  }
+
+  if (!code || typeof code !== 'string') {
+    return res.status(400).json({ error: 'Missing authorization code' });
+  }
+
+  try {
+    const tokens = await exchangeCodeForTokens(code);
+    const expiresAt = Date.now() + tokens.expires_in * 1000;
+
+    const sessionId = randomBytes(16).toString('hex');
+    tokenStore.set(sessionId, {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresAt,
+    });
+
+    res.cookie('session_id', sessionId, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    res.cookie('access_token', tokens.access_token, {
+      httpOnly: true,
+      maxAge: 55 * 60 * 1000, // 55 minutes
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    res.clearCookie('spotify_auth_state');
+
+    const origin = process.env.ORIGIN || 'http://127.0.0.1:3000';
+    
+    // If no frontend is running, show success page from backend
+    if (!process.env.ORIGIN || process.env.ORIGIN === 'http://127.0.0.1:3000') {
+      return res.send(`
+        <html>
+          <head><title>Authentication Successful</title></head>
+          <body style="font-family: sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+            <h1>✓ Authentication Successful</h1>
+            <p>You have successfully connected your Spotify account.</p>
+            <h3>Available Endpoints:</h3>
+            <ul>
+              <li><a href="/spotify/profile">GET /spotify/profile</a> - Your Spotify profile</li>
+              <li><a href="/spotify/top-artists">GET /spotify/top-artists</a> - Top 25 artists</li>
+              <li><a href="/spotify/top-tracks">GET /spotify/top-tracks</a> - Top 25 tracks</li>
+              <li><a href="/spotify/playlists">GET /spotify/playlists</a> - All playlists</li>
+              <li><a href="/spotify/recent">GET /spotify/recent</a> - Recently played (last 50)</li>
+              <li><a href="/spotify/themes">GET /spotify/themes</a> - <strong>AI-generated music themes</strong></li>
+            </ul>
+            <p><small>Session ID: ${sessionId}</small></p>
+            <p><small>Access via: <code>http://127.0.0.1:5173</code></small></p>
+          </body>
+        </html>
+      `);
+    }
+    
+    return res.redirect(`${origin}/success`);
+  } catch (error) {
+    logger.error({ error }, 'Token exchange failed');
+    return res.status(500).json({ error: 'Failed to exchange authorization code' });
+  }
+});
 
 function getAccessToken(req: any): string {
   if (process.env.MOCK_MODE === 'true') {
@@ -225,6 +362,8 @@ router.get('/spotify/recent', async (req, res) => {
 
 function getMockThemes() {
   return {
+    source: 'spotify',
+    analyzedAt: new Date().toISOString(),
     themes: [
       {
         label: "Ambient Focus Flow",
@@ -349,8 +488,13 @@ router.get('/spotify/themes', async (req, res) => {
       recentlyPlayed,
     });
 
-    return res.json(themes);
+    return res.json({
+      source: 'spotify',
+      analyzedAt: new Date().toISOString(),
+      themes: themes.themes,
+    });
   } catch (error: any) {
+    logger.error({ error }, 'Failed to extract Spotify themes');
     throw new AppError(500, `Failed to extract themes: ${error.message}`);
   }
 });
