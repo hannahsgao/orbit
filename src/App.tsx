@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { OrbitSystem } from './components/OrbitSystem';
+import { BouncingCow } from './components/BouncingCow';
 
 export default function App() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -40,7 +41,7 @@ export default function App() {
       <div className="relative z-10 p-8 pointer-events-none">
         <div className="text-center mb-8">
           <h1 className="text-white mb-2" style={{ fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
-            Dithered Planets
+            Milky Way
           </h1>
           <p className="text-white opacity-75" style={{ fontFamily: 'monospace' }}>
             {'>'} Left-click planets to spawn satellites | Cmd+click to select | Cmd+drag for multi-select | Double-click to reset zoom | +/- keys to zoom
@@ -51,6 +52,12 @@ export default function App() {
       <OrbitSystem 
         centerX={dimensions.width / 2} 
         centerY={dimensions.height / 2} 
+      />
+
+      {/* Bouncing cow screensaver */}
+      <BouncingCow 
+        containerWidth={dimensions.width} 
+        containerHeight={dimensions.height} 
       />
     </div>
   );

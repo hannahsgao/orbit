@@ -1,18 +1,71 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface PlanetProps {
   x: number;
   y: number;
   radius: number;
   color: string;
-  onClick: (e: React.MouseEvent<HTMLCanvasElement>) => void;
+  imageAsset: string;
+  onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
   isSelected?: boolean;
   opacity?: number;
-  onMouseEnter?: (e: React.MouseEvent<HTMLCanvasElement>) => void;
-  onMouseLeave?: (e: React.MouseEvent<HTMLCanvasElement>) => void;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-export function Planet({ x, y, radius, color, onClick, isSelected = false, opacity = 1, onMouseEnter, onMouseLeave }: PlanetProps) {
+export function Planet({ x, y, radius, color, imageAsset, onClick, isSelected = false, opacity = 1, onMouseEnter, onMouseLeave }: PlanetProps) {
+  const [imageError, setImageError] = useState(false);
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    onClick(e);
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      style={{
+        position: 'absolute',
+        left: x - radius,
+        top: y - radius,
+        width: radius * 2,
+        height: radius * 2,
+        cursor: 'pointer',
+        opacity: opacity,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        imageRendering: 'pixelated',
+      }}
+    >
+      {/* Fallback to programmatic rendering if PNG fails to load */}
+      {imageError ? (
+        <FallbackPlanetCanvas 
+          radius={radius} 
+          color={color} 
+          isSelected={isSelected}
+        />
+      ) : (
+        <img
+          src={imageAsset}
+          alt="Planet"
+          style={{
+            width: '100%',
+            height: '100%',
+            imageRendering: 'pixelated',
+            filter: isSelected ? 'drop-shadow(0 0 4px #FFFFFF)' : 'none',
+          }}
+          onError={() => setImageError(true)}
+        />
+      )}
+    </div>
+  );
+}
+
+// Fallback component that renders the original dithered planet if PNG fails to load
+function FallbackPlanetCanvas({ radius, color, isSelected }: { radius: number; color: string; isSelected: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -92,26 +145,15 @@ export function Planet({ x, y, radius, color, onClick, isSelected = false, opaci
       ctx.arc(radius, radius, radius - 1, 0, 2 * Math.PI);
       ctx.stroke();
     }
-  }, [radius, color, x, y, isSelected]);
-
-  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    e.stopPropagation();
-    onClick(e);
-  };
+  }, [radius, color, isSelected]);
 
   return (
     <canvas
       ref={canvasRef}
-      onClick={handleClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
       style={{
-        position: 'absolute',
-        left: x - radius,
-        top: y - radius,
-        cursor: 'pointer',
+        width: '100%',
+        height: '100%',
         imageRendering: 'pixelated',
-        opacity: opacity,
       }}
     />
   );

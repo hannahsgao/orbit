@@ -1,4 +1,63 @@
-**Add your own guidelines here**
+# Dithered Planets — Core Style Rules
+
+Keep it minimal. Monochrome. Pixel-precise. Deterministic.
+
+## Palette
+
+* **Black canvas** (`#000`) + **white ink** (`#FFF`) + optional **single accent** (e.g., phosphor green `#A8FF60`).
+* Use at most **bg + 2 inks + 1 accent** on a screen.
+* No soft gradients; **simulate with dither** and bloom.
+
+## Type & Copy
+
+* **Monospace only** (IBM Plex Mono / JetBrains Mono).
+* H1 24–32px **ALL CAPS** with letter-spacing; body 12–14px.
+* Terminal tone, concise prompts (e.g., `> Left-click to spawn satellites`).
+
+## Dither & Texture
+
+* Prefer **ordered Bayer (4×4/8×8)**; use at most **two dither styles** per view.
+* Starfield = sparse bright pixels + low-density dust; **no Gaussian blur**.
+* Glow via small **bloom halo**, not blur.
+
+## Geometry & Layout
+
+* **1px strokes**; everything **pixel-aligned** to whole pixels.
+* Orbits: **dotted 1px** circles; planet radii quantized (e.g., 6/8/12/16/20px).
+* Hit areas ≥ **28×28px**; panels: black with **1px inside stroke**.
+
+## Motion & Interaction
+
+* Linear/step-like motion; **frame-stepped feel** (24-fps look).
+* Zoom is multiplicative; double-click resets.
+* Selection = brief **radius pulse** + subtle bloom.
+* All randomness **seeded** for reproducibility.
+
+## UI Vocabulary
+
+* Text-first controls: `[ - ] [ + ] [ RESET ]`, pipes `|`, brackets.
+* Tooltips single-line, 12–14px, no shadows.
+
+## Accessibility
+
+* **AAA contrast** for text/critical lines.
+* Honor `prefers-reduced-motion`; disable twinkle/frame-stepping.
+* Full keyboard nav with **1px dashed focus**.
+* Screen reader roles for planets; live updates on changes.
+
+## Do / Don’t
+
+**Do:** quantize sizes/motion · dither instead of blur · keep UI sparse, deterministic.
+**Don’t:** colorful gradients · drop shadows/neumorphism · >2 dither styles · thick anti-aliased strokes.
+
+## Ship Checklist
+
+* [ ] Monochrome + ≤1 accent
+* [ ] ≤2 dither styles; 1px, pixel-aligned
+* [ ] Linear/step motion; seeded randomness
+* [ ] AAA contrast; keyboard & reduced-motion supported
+* [ ] Text legible at 12–14px; clear terminal prompts
+
 <!--
 
 System Guidelines

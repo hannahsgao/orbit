@@ -11,6 +11,7 @@ interface PlanetNode {
   parentId: string | null;
   children: string[];
   hasSpawnedChildren: boolean;
+  imageAsset: string;
 }
 
 interface OrbitSystemProps {
@@ -20,6 +21,19 @@ interface OrbitSystemProps {
 
 export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
   const [planets, setPlanets] = useState<PlanetNode[]>([]);
+
+  // Available planet assets
+  const planetAssets = [
+    '/src/assets/planets/cowplanet.png',
+    '/src/assets/planets/craterplanet.png', 
+    '/src/assets/planets/spotplanet.png',
+    '/src/assets/planets/stripeplanet.png'
+  ];
+
+  // Helper function to get a random planet asset
+  const getRandomPlanetAsset = () => {
+    return planetAssets[Math.floor(Math.random() * planetAssets.length)];
+  };
   const [time, setTime] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -68,12 +82,13 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
           id,
           orbitRadius: orbit.radius,
           orbitSpeed: orbit.speed + Math.random() * 0.05,
-          planetRadius: 12 + Math.random() * 18,
+          planetRadius: 16 + Math.random() * 20,
           color: '#FFFFFF',
           angle: (Math.PI * 2 * i) / orbit.count + Math.random() * 0.5,
           parentId: null,
           children: [],
-          hasSpawnedChildren: false
+          hasSpawnedChildren: false,
+          imageAsset: getRandomPlanetAsset()
         });
         planetIndex++;
       }
@@ -599,8 +614,8 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
       for (let i = 0; i < numChildren; i++) {
         const childId = `${planetId}-child-${Date.now()}-${i}`;
         // Clamp child radius to be smaller than parent
-        const tentativeRadius = 8 + Math.random() * 10;
-        const maxChildRadius = Math.max(2, clickedPlanet.planetRadius * 0.8);
+        const tentativeRadius = 8 + Math.random() * 8;
+        const maxChildRadius = Math.max(2, clickedPlanet.planetRadius * 0.5);
         const childRadius = Math.min(tentativeRadius, maxChildRadius);
         const childPlanet: PlanetNode = {
           id: childId,
@@ -611,7 +626,8 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
           angle: (Math.PI * 2 * i) / numChildren,
           parentId: planetId,
           children: [],
-          hasSpawnedChildren: false
+          hasSpawnedChildren: false,
+          imageAsset: getRandomPlanetAsset()
         };
         
         newPlanets.push(childPlanet);
@@ -833,6 +849,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
                 y={transformedPos.y}
                 radius={planet.planetRadius * zoom}
                 color={planet.color}
+                imageAsset={planet.imageAsset}
                 onClick={(event) => handlePlanetClick(planet.id, event)}
                 isSelected={selectedPlanetIds.has(planet.id)}
                 opacity={opacity}
