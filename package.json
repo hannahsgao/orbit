@@ -29,13 +29,22 @@
             "@radix-ui/react-toggle": "^1.1.2",
             "@radix-ui/react-toggle-group": "^1.1.2",
             "@radix-ui/react-tooltip": "^1.1.8",
+            "axios": "^1.6.2",
+            "cheerio": "^1.1.2",
             "class-variance-authority": "^0.7.1",
             "clsx": "*",
             "cmdk": "^1.1.1",
+            "cookie-parser": "^1.4.6",
+            "cors": "^2.8.5",
+            "dotenv": "^16.3.1",
             "embla-carousel-react": "^8.6.0",
+            "express": "^4.18.2",
             "input-otp": "^1.4.2",
             "lucide-react": "^0.487.0",
             "next-themes": "^0.4.6",
+            "openai": "^4.77.3",
+            "pino": "^10.1.0",
+            "pino-http": "^11.0.0",
             "react": "^18.3.1",
             "react-day-picker": "^8.10.1",
             "react-dom": "^18.3.1",
@@ -44,17 +53,28 @@
             "recharts": "^2.15.2",
             "sonner": "^2.0.3",
             "tailwind-merge": "*",
-            "vaul": "^1.1.2"
+            "vaul": "^1.1.2",
+            "zod": "^3.22.4"
       },
       "devDependencies": {
+            "@types/cookie-parser": "^1.4.6",
+            "@types/cors": "^2.8.17",
+            "@types/express": "^4.17.21",
             "@types/node": "^20.10.0",
             "@types/react": "^19.2.2",
             "@types/react-dom": "^19.2.2",
             "@vitejs/plugin-react-swc": "^3.10.2",
+            "nodemon": "^3.0.2",
+            "pino-pretty": "^10.2.3",
+            "tsx": "^4.7.0",
+            "typescript": "^5.3.3",
             "vite": "^6.4.1"
       },
       "scripts": {
             "dev": "vite",
-            "build": "vite build"
+            "build": "vite build",
+            "server": "tsx watch src/server.ts",
+            "server:build": "tsc src/server.ts --outDir dist",
+            "server:start": "node dist/server.js"
       }
 }

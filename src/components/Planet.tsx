@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
+import { ThemeNode } from '../types/personality';
+
 interface PlanetProps {
   x: number;
   y: number;
@@ -11,21 +13,34 @@ interface PlanetProps {
   opacity?: number;
   onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseLeave?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  themeData?: ThemeNode;
 }
 
-export function Planet({ x, y, radius, color, imageAsset, onClick, isSelected = false, opacity = 1, onMouseEnter, onMouseLeave }: PlanetProps) {
+export function Planet({ x, y, radius, color, imageAsset, onClick, isSelected = false, opacity = 1, onMouseEnter, onMouseLeave, themeData }: PlanetProps) {
   const [imageError, setImageError] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     onClick(e);
   };
 
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    setShowTooltip(true);
+    onMouseEnter?.(e);
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    setShowTooltip(false);
+    onMouseLeave?.(e);
+  };
+
   return (
-    <div
-      onClick={handleClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+    <>
+      <div
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       style={{
         position: 'absolute',
         left: x - radius,
@@ -70,7 +85,41 @@ export function Planet({ x, y, radius, color, imageAsset, onClick, isSelected = 
           onError={() => setImageError(true)}
         />
       )}
-    </div>
+      </div>
+
+      {/* Tooltip for theme description */}
+      {showTooltip && themeData && themeData.description && (
+        <div
+          style={{
+            position: 'absolute',
+            left: x + radius + 10,
+            top: y - radius,
+            background: 'rgba(0, 0, 0, 0.9)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            color: 'white',
+            padding: '8px 12px',
+            fontFamily: 'monospace',
+            fontSize: '12px',
+            maxWidth: '250px',
+            zIndex: 1000,
+            pointerEvents: 'none',
+            borderRadius: '4px',
+          }}
+        >
+          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+            {themeData.name}
+          </div>
+          <div style={{ fontSize: '11px', opacity: 0.9 }}>
+            {themeData.description}
+          </div>
+          {themeData.level && (
+            <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>
+              Level: {themeData.level}
+            </div>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 

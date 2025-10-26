@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Planet } from './Planet';
+import { ThemeNode, PersonalityTree } from '../types/personality';
+import { convertPersonalityTreeToPlanets } from '../utils/personalityToPlanets';
 
 interface PlanetNode {
   id: string;
@@ -12,14 +14,17 @@ interface PlanetNode {
   children: string[];
   hasSpawnedChildren: boolean;
   imageAsset: string;
+  // Theme data for personality-based planets
+  themeData?: ThemeNode;
 }
 
 interface OrbitSystemProps {
   centerX: number;
   centerY: number;
+  personalityTree?: PersonalityTree; // Optional: load planets from personality data
 }
 
-export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
+export function OrbitSystem({ centerX, centerY, personalityTree }: OrbitSystemProps) {
   const [planets, setPlanets] = useState<PlanetNode[]>([]);
 
   // Available planet assets
@@ -65,37 +70,16 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
 
   // Initialize with root planets
   useEffect(() => {
-    const initialPlanets: PlanetNode[] = [];
-    
-    // Create multiple orbital rings with planets
-    const orbits = [
-      { radius: 150, count: 2, speed: 0.2 },
-      { radius: 260, count: 4, speed: 0.22 },
-      { radius: 380, count: 5, speed: 0.15 },
-    ];
+    let initialPlanets: PlanetNode[] = [];
 
-    let planetIndex = 0;
-    orbits.forEach(orbit => {
-      for (let i = 0; i < orbit.count; i++) {
-        const id = `planet-${planetIndex}`;
-        initialPlanets.push({
-          id,
-          orbitRadius: orbit.radius,
-          orbitSpeed: orbit.speed + Math.random() * 0.05,
-          planetRadius: 16 + Math.random() * 20,
-          color: '#FFFFFF',
-          angle: (Math.PI * 2 * i) / orbit.count + Math.random() * 0.5,
-          parentId: null,
-          children: [],
-          hasSpawnedChildren: false,
-          imageAsset: getRandomPlanetAsset()
-        });
-        planetIndex++;
-      }
-    });
-    
+    if (personalityTree) {
+      // Load planets from personality tree
+      initialPlanets = convertPersonalityTreeToPlanets(personalityTree);
+    }
+    // If no personalityTree, show no planets (empty state)
+
     setPlanets(initialPlanets);
-  }, []);
+  }, [personalityTree]);
 
   // Animation loop with camera smoothing
   useEffect(() => {
@@ -864,6 +848,32 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
             pointerEvents: 'none'
           }}
         />
+
+        {/* Empty state message when no planets */}
+        {planets.length === 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              left: transformedCenter.x,
+              top: transformedCenter.y + 80,
+              transform: 'translateX(-50%)',
+              color: 'white',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              textAlign: 'center',
+              opacity: 0.6,
+              pointerEvents: 'none',
+              maxWidth: '400px',
+            }}
+          >
+            <div style={{ marginBottom: '8px' }}>
+              {'>'} Connect your data sources to generate your personality orbit
+            </div>
+            <div style={{ fontSize: '12px', opacity: 0.8 }}>
+              Use the connection buttons in the top-left corner
+            </div>
+          </div>
+        )}
         
         {/* Orbit paths */}
         {planets
@@ -923,6 +933,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
                 opacity={opacity}
                 onMouseEnter={() => setHoveredPlanetId(planet.id)}
                 onMouseLeave={() => setHoveredPlanetId(prev => (prev === planet.id ? null : prev))}
+                themeData={planet.themeData}
               />
             );
           });
@@ -948,7 +959,7 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
             .map(planet => {
               const pos = calculatePosition(planet);
               const transformedPos = transformPosition(pos);
-              const label = planet.id;
+              const label = planet.themeData?.name || planet.id;
               const flashVisible = labelFlash[planet.id]?.visible ?? false;
               const forceVisible = hoveredPlanetId === planet.id;
               return (

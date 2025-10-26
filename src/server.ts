@@ -1,0 +1,39 @@
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
+import { corsOptions } from './utils/cors';
+import { errorMiddleware } from './utils/errors';
+import { logger } from './utils/logger';
+import { validateEnv } from './utils/env';
+import authRouter from './routes/auth';
+import spotifyRouter from './routes/spotify';
+import gmailRouter from './routes/gmail';
+
+dotenv.config();
+validateEnv();
+
+const app = express();
+const PORT = process.env.SERVER_PORT || 5173;
+
+app.use(corsOptions);
+app.use(express.json());
+app.use(cookieParser());
+
+app.use((req, _res, next) => {
+  logger.info({ method: req.method, path: req.path }, 'Incoming request');
+  next();
+});
+
+app.use(authRouter);
+app.use(spotifyRouter);
+app.use(gmailRouter);
+
+app.use(errorMiddleware);
+
+app.listen(PORT, () => {
+  logger.info({ port: PORT, mockMode: process.env.MOCK_MODE === 'true' }, 'Server started');
+  logger.info(`orbit-mcp-spotify running on http://127.0.0.1:${PORT}`);
+  logger.info(`Mock mode: ${process.env.MOCK_MODE === 'true' ? 'ENABLED' : 'DISABLED'}`);
+  logger.info(`Origin: ${process.env.ORIGIN || 'http://127.0.0.1:3000'}`);
+});
+
