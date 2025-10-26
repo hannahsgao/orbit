@@ -1,4 +1,19 @@
-import { tokenize, computeTermFrequency } from './text';
+// Inline text utilities (previously in ./text)
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter(token => token.length > 0);
+}
+
+function computeTermFrequency(tokens: string[]): Map<string, number> {
+  const freq = new Map<string, number>();
+  for (const token of tokens) {
+    freq.set(token, (freq.get(token) || 0) + 1);
+  }
+  return freq;
+}
 
 export function redactEmail(email: string): string {
   if (!email || !email.includes('@')) {

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { spotifyGet, spotifyPaginate, SPOTIFY_API_BASE } from '../services/spotify';
-import { extractMusicThemes } from '../services/openai';
+import { extractMusicThemes } from '../services/spotify_themes';
 import { AppError } from '../utils/errors';
 import {
   UserProfileSchema,
@@ -223,16 +223,52 @@ router.get('/spotify/recent', async (req, res) => {
   return res.json(recent);
 });
 
+function getMockThemes() {
+  return {
+    themes: [
+      {
+        label: "Ambient Focus Flow",
+        rationale: "Your listening patterns show a preference for atmospheric, non-intrusive music ideal for concentration and deep work.",
+        sources: [
+          { title: "Artist 0", type: "artist" as const },
+          { title: "Track 2", type: "track" as const },
+          { title: "Chill Vibes", type: "playlist" as const },
+        ]
+      },
+      {
+        label: "Electronic Exploration",
+        rationale: "A strong theme of electronic and experimental music suggests curiosity about synthetic soundscapes and modern production.",
+        sources: [
+          { title: "Artist 1", type: "artist" as const },
+          { title: "Track 5", type: "track" as const },
+        ]
+      },
+      {
+        label: "High Energy Movement",
+        rationale: "Workout-oriented playlists and high-tempo tracks indicate music used for physical activity and motivation.",
+        sources: [
+          { title: "Workout Pump", type: "playlist" as const },
+          { title: "Track 8", type: "track" as const },
+        ]
+      },
+    ]
+  };
+}
+
 // NEW: AI-powered theme extraction
 router.get('/spotify/themes', async (req, res) => {
   const accessToken = getAccessToken(req);
+
+  // Handle mock mode
+  if (process.env.MOCK_MODE === 'true') {
+    return res.json(getMockThemes());
+  }
 
   try {
     // Fetch all Spotify data in parallel
     const [topArtists, topTracks, playlists, recentlyPlayed] = await Promise.all([
       // Top Artists
       (async () => {
-        if (process.env.MOCK_MODE === 'true') return getMockArtists(25);
         const data = await spotifyGet<any>(
           `${SPOTIFY_API_BASE}/me/top/artists?time_range=medium_term&limit=25`,
           accessToken
@@ -250,9 +286,8 @@ router.get('/spotify/themes', async (req, res) => {
       
       // Top Tracks
       (async () => {
-        if (process.env.MOCK_MODE === 'true') return getMockTracks(25);
         const data = await spotifyGet<any>(
-          `${SPOTIFY_API_BASE}/me/top/tracks?time_range=medium_term&limit=25`,
+          `${SPOTIFY_API_BASE}/me/top/tracks?time_range=medium_term&limit=50`,
           accessToken
         );
         return data.items.map((item: any) =>
@@ -272,7 +307,6 @@ router.get('/spotify/themes', async (req, res) => {
       
       // Playlists
       (async () => {
-        if (process.env.MOCK_MODE === 'true') return getMockPlaylists();
         const items = await spotifyPaginate<any>(
           `${SPOTIFY_API_BASE}/me/playlists?limit=50`,
           accessToken
@@ -292,7 +326,6 @@ router.get('/spotify/themes', async (req, res) => {
       
       // Recently Played
       (async () => {
-        if (process.env.MOCK_MODE === 'true') return getMockRecent();
         const data = await spotifyGet<any>(
           `${SPOTIFY_API_BASE}/me/player/recently-played?limit=50`,
           accessToken

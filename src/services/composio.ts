@@ -265,6 +265,7 @@ export async function getConnectedAccountById(accountId: string): Promise<Connec
 // Execute Tools
 export interface ToolExecutionRequest {
   connectedAccountId: string;
+  entityId: string; // User ID - required by v3 API
   appName: string;
   actionName: string;
   input: Record<string, any>;
@@ -280,10 +281,12 @@ export async function executeTool(
   request: ToolExecutionRequest
 ): Promise<ToolExecutionResponse> {
   try {
-    // V3 API: Use /tools/execute/{tool_slug} endpoint with 'arguments' not 'input'
+    // V3 API: Use /tools/execute/{tool_slug} endpoint
+    // Requires both entity_id (user_id) and connected_account_id
     const response = await axios.post(
       `${COMPOSIO_API_BASE}/tools/execute/${request.actionName}`,
       {
+        entity_id: request.entityId, // Required: user_id for entity identification
         connected_account_id: request.connectedAccountId,
         arguments: request.input, // v3 uses 'arguments' instead of 'input'
       },
@@ -312,36 +315,45 @@ export async function executeTool(
 
 // Gmail-specific helpers
 export async function fetchGmailEmails(
+  entityId: string,
   connectedAccountId: string,
   query?: string,
-  maxResults: number = 100
+  maxResults: number = 20, // Reduced to 20 to avoid "response too large" errors
+  includePayload: boolean = true // Default to false - get metadata only
 ): Promise<any> {
   return executeTool({
+    entityId,
     connectedAccountId,
     appName: 'gmail',
     actionName: 'gmail_fetch_emails', // v3 uses lowercase snake_case
     input: {
-      query: query || `newer_than:90d -category:promotions -category:social`,
-      maxResults: maxResults, // camelCase for v3
-      includePayload: true, // camelCase for v3
-      idsOnly: false, // camelCase for v3
-      userId: 'me', // camelCase for v3
+      query: query || `newer_than:30d -category:promotions -category:social`,
+      max_results: maxResults, // snake_case for v3 parameters
+      include_payload: true, // snake_case - if true, returns full email content
+      ids_only: false, // snake_case for v3 parameters
+      user_id: 'me', // snake_case for v3 parameters
+      verbose: true, // Get basic metadata even with include_payload=false
     },
   });
 }
 
-export async function listGmailLabels(connectedAccountId: string): Promise<any> {
+export async function listGmailLabels(
+  entityId: string,
+  connectedAccountId: string
+): Promise<any> {
   return executeTool({
+    entityId,
     connectedAccountId,
     appName: 'gmail',
     actionName: 'gmail_list_labels', // v3 uses lowercase snake_case
     input: {
-      userId: 'me', // camelCase for v3
+      user_id: 'me', // snake_case for v3 parameters
     },
   });
 }
 
 export async function sendGmailEmail(
+  entityId: string,
   connectedAccountId: string,
   to: string,
   subject: string,
@@ -351,6 +363,7 @@ export async function sendGmailEmail(
   bcc?: string[]
 ): Promise<any> {
   return executeTool({
+    entityId,
     connectedAccountId,
     appName: 'gmail',
     actionName: 'gmail_send_email',
@@ -367,18 +380,20 @@ export async function sendGmailEmail(
 }
 
 export async function searchGmailEmails(
+  entityId: string,
   connectedAccountId: string,
   query: string,
   maxResults: number = 10
 ): Promise<any> {
   return executeTool({
+    entityId,
     connectedAccountId,
     appName: 'gmail',
     actionName: 'gmail_search_emails',
     input: {
       query,
-      maxResults,
-      userId: 'me',
+      max_results: maxResults,
+      user_id: 'me',
     },
   });
 }

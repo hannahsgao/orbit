@@ -98,9 +98,9 @@ Go beyond surface-level genre categorization. Look for:
 Each theme should:
 1. Have a creative, specific label (avoid generic terms like "Pop Music")
 2. Provide psychological/cultural insight in the rationale
-3. Reference specific songs, artists, or playlists as evidence
+3. Reference 3-5 specific songs, artists, or playlists as evidence
 
-Aim for 5-7 distinct themes that paint a rich picture of who this person is through their music.`;
+Extract 2-3 distinct themes that paint a rich picture of who this person is through their music.`;
 
   const userPrompt = `Analyze this user's Spotify data and extract their core musical themes:\n\n${formattedData}`;
 

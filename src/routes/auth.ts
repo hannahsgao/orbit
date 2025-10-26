@@ -106,27 +106,27 @@ router.get('/auth/callback', async (req, res) => {
 
     res.clearCookie('spotify_auth_state');
 
-    const origin = process.env.ORIGIN || 'http://localhost:3000';
+    const origin = process.env.ORIGIN || 'http://127.0.0.1:3000';
     
     // If no frontend is running, show success page from backend
-    if (!process.env.ORIGIN || process.env.ORIGIN === 'http://localhost:3000') {
+    if (!process.env.ORIGIN || process.env.ORIGIN === 'http://127.0.0.1:3000') {
       return res.send(`
         <html>
           <head><title>Authentication Successful</title></head>
           <body style="font-family: sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
             <h1>✓ Authentication Successful</h1>
             <p>You have successfully connected your Spotify account.</p>
-            <h3>Try these endpoints:</h3>
+            <h3>Available Endpoints:</h3>
             <ul>
-              <li><a href="/spotify/profile">GET /spotify/profile</a></li>
-              <li><a href="/spotify/top-artists">GET /spotify/top-artists</a></li>
-              <li><a href="/spotify/top-tracks">GET /spotify/top-tracks</a></li>
-              <li><a href="/spotify/playlists">GET /spotify/playlists</a></li>
-              <li><a href="/spotify/recent">GET /spotify/recent</a></li>
-              <li><a href="/mcp/spotify/data">GET /mcp/spotify/data</a> (consolidated)</li>
-              <li><a href="/mcp/spotify/themes">GET /mcp/spotify/themes</a> (themes for Orbit)</li>
+              <li><a href="/spotify/profile">GET /spotify/profile</a> - Your Spotify profile</li>
+              <li><a href="/spotify/top-artists">GET /spotify/top-artists</a> - Top 25 artists</li>
+              <li><a href="/spotify/top-tracks">GET /spotify/top-tracks</a> - Top 25 tracks</li>
+              <li><a href="/spotify/playlists">GET /spotify/playlists</a> - All playlists</li>
+              <li><a href="/spotify/recent">GET /spotify/recent</a> - Recently played (last 50)</li>
+              <li><a href="/spotify/themes">GET /spotify/themes</a> - <strong>AI-generated music themes</strong></li>
             </ul>
             <p><small>Session ID: ${sessionId}</small></p>
+            <p><small>Access via: <code>http://127.0.0.1:5173</code></small></p>
           </body>
         </html>
       `);

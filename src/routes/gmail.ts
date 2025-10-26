@@ -152,7 +152,7 @@ router.get('/gmail/messages', async (req, res) => {
     }
 
     // Fetch emails via Composio
-    const result = await fetchGmailEmails(account.id);
+    const result = await fetchGmailEmails(userId, account.id);
 
     if (!result.successful) {
       throw new AppError(500, result.error || 'Failed to fetch emails');
@@ -212,7 +212,7 @@ router.get('/gmail/summary', async (req, res) => {
     }
 
     // Fetch emails via Composio
-    const result = await fetchGmailEmails(account.id);
+    const result = await fetchGmailEmails(userId, account.id);
 
     if (!result.successful) {
       throw new AppError(500, result.error || 'Failed to fetch emails');
@@ -284,7 +284,7 @@ router.get('/gmail/labels', async (req, res) => {
       throw new AppError(401, 'Gmail not connected. Use POST /gmail/connect first.');
     }
 
-    const result = await listGmailLabels(account.id);
+    const result = await listGmailLabels(userId, account.id);
 
     if (!result.successful) {
       throw new AppError(500, result.error || 'Failed to fetch labels');

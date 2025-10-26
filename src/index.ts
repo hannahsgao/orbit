@@ -8,7 +8,6 @@ import { validateEnv } from './utils/env';
 import healthRouter from './routes/health';
 import authRouter from './routes/auth';
 import spotifyRouter from './routes/spotify';
-import mcpRouter from './routes/mcp';
 import gmailRouter from './routes/gmail';
 
 dotenv.config();
@@ -29,15 +28,14 @@ app.use((req, _res, next) => {
 app.use(healthRouter);
 app.use(authRouter);
 app.use(spotifyRouter);
-app.use(mcpRouter);
 app.use(gmailRouter);
 
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
   logger.info({ port: PORT, mockMode: process.env.MOCK_MODE === 'true' }, 'Server started');
-  logger.info(`orbit-mcp-spotify running on http://localhost:${PORT}`);
+  logger.info(`orbit-mcp-spotify running on http://127.0.0.1:${PORT}`);
   logger.info(`Mock mode: ${process.env.MOCK_MODE === 'true' ? 'ENABLED' : 'DISABLED'}`);
-  logger.info(`Origin: ${process.env.ORIGIN || 'http://localhost:3000'}`);
+  logger.info(`Origin: ${process.env.ORIGIN || 'http://127.0.0.1:3000'}`);
 });
 
