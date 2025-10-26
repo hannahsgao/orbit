@@ -402,6 +402,68 @@ export function OrbitSystem({ centerX, centerY }: OrbitSystemProps) {
   const handleMouseDown = (e: React.MouseEvent) => {
     const isCmdPressed = e.metaKey || e.ctrlKey;
     
+    // Check if clicking on empty space (not on a planet) and we have camera stack to go back to
+    if (!isCmdPressed && !isDragging && cameraStack.length > 0 && focusedPlanetId) {
+      // Check if the click is on empty space by seeing if it's not on any planet
+      const container = containerRef.current;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        // Check if click is on any planet
+        let clickedOnPlanet = false;
+        planets.forEach(planet => {
+          const pos = calculatePosition(planet);
+          const transformedPos = transformPosition(pos);
+          const planetScreenX = transformedPos.x;
+          const planetScreenY = transformedPos.y;
+          const planetRadius = planet.planetRadius * zoom;
+          
+          const distance = Math.sqrt(
+            Math.pow(clickX - planetScreenX, 2) + Math.pow(clickY - planetScreenY, 2)
+          );
+          
+          if (distance <= planetRadius) {
+            clickedOnPlanet = true;
+          }
+        });
+        
+        // If clicking on empty space, go back to previous camera state
+        if (!clickedOnPlanet) {
+          const next = [...cameraStack];
+          const prevCam = next.pop();
+          const container2 = containerRef.current;
+          if (container2) {
+            const desiredZoom = prevCam ? prevCam.zoom : 1;
+            const subjectId = prevCam ? prevCam.subjectPlanetId : null;
+            const subjectPos = subjectId
+              ? calculatePosition(planets.find(p => p.id === subjectId) || { id: '', orbitRadius: 0, orbitSpeed: 0, planetRadius: 0, color: '', angle: 0, parentId: null, children: [], hasSpawnedChildren: false } as any)
+              : { x: centerX, y: centerY };
+            const initialScreenPos = {
+              x: subjectPos.x * zoom + pan.x,
+              y: subjectPos.y * zoom + pan.y
+            };
+            setFocusAnim({
+              inProgress: true,
+              startMs: performance.now(),
+              durationMs: 900,
+              startZoom: zoom,
+              startPan: { ...pan },
+              targetZoom: desiredZoom,
+              initialScreenPos
+            });
+            setFocusedPlanetId(subjectId);
+          } else {
+            setTargetZoom(prevCam ? prevCam.zoom : 1);
+            setFocusedPlanetId(prevCam ? prevCam.subjectPlanetId : null);
+          }
+          setCameraStack(next);
+          return; // Exit early to prevent normal pan behavior
+        }
+      }
+    }
+    
     // Deselect planets when clicking on empty space (not Cmd+drag)
     if (!isCmdPressed && !isDragging) {
       setSelectedPlanetIds(new Set());
