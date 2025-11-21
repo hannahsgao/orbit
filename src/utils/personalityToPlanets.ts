@@ -123,7 +123,7 @@ export function convertPersonalityTreeToPlanets(
       parentId: themeNode.parentId,
       children: [...themeNode.childIds],
       hasSpawnedChildren: themeNode.childIds.length > 0,
-      imageAsset: getPlanetAssetByDataSource(themeNode),
+      imageAsset: getRandomPlanetAsset(),
       themeData: themeNode,
     };
 

@@ -7,7 +7,7 @@ interface BackendTheme {
   sources: {
     title: string;
     url?: string;
-    type: 'track' | 'artist' | 'playlist' | 'genre' | 'email' | 'sender' | 'conversation';
+    type: 'track' | 'artist' | 'playlist' | 'genre' | 'email' | 'sender' | 'conversation' | 'search';
   }[];
 }
 
@@ -277,13 +277,13 @@ export async function fetchAndConvertThemes(
   );
   sources.push('gmail');
 
-  // Try Search (if endpoint exists)
-  // promises.push(
-  //   fetch(`${backendUrl}/search/themes`, fetchOptions)
-  //     .then((r) => (r.ok ? r.json() : null))
-  //     .catch(() => null)
-  // );
-  // sources.push('search');
+  // Try Search
+  promises.push(
+    fetch(`${backendUrl}/search/themes`, fetchOptions)
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+  );
+  sources.push('search');
 
   const results = await Promise.all(promises);
 

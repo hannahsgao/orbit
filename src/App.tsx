@@ -15,7 +15,6 @@ export default function App() {
   const [showSolarSystem, setShowSolarSystem] = useState(false);
   const [personalityTree, setPersonalityTree] = useState<PersonalityTree | undefined>(undefined);
   const [isLoadingThemes, setIsLoadingThemes] = useState(false);
-  const [themesError, setThemesError] = useState<string | null>(null);
   const [connectedSources, setConnectedSources] = useState<Set<string>>(new Set());
   const [lastThemeCount, setLastThemeCount] = useState(0);
 
@@ -53,7 +52,6 @@ export default function App() {
   // Function to load themes from backend
   const loadThemes = async (showNotification = false) => {
     setIsLoadingThemes(true);
-    setThemesError(null);
 
     try {
       const userId = 'user-current'; // Use consistent user ID
@@ -88,13 +86,12 @@ export default function App() {
       }
     } catch (error) {
       console.error('Error loading themes:', error);
-      setThemesError('Failed to load themes');
     } finally {
       setIsLoadingThemes(false);
     }
   };
 
-  // Auto-load themes when entering solar system (one-time)
+  // Auto-load themes when entering solar system (initial load)
   useEffect(() => {
     if (hasEnteredSolarSystem && !personalityTree && !isLoadingThemes) {
       // Wait a bit for any OAuth redirects to complete, then try loading
@@ -105,6 +102,18 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [hasEnteredSolarSystem]);
+
+  // Auto-refresh themes periodically to detect new data
+  useEffect(() => {
+    if (hasEnteredSolarSystem && !isLoadingThemes) {
+      // Poll for new themes every 10 seconds
+      const pollInterval = setInterval(() => {
+        loadThemes(true);
+      }, 10000);
+
+      return () => clearInterval(pollInterval);
+    }
+  }, [hasEnteredSolarSystem, isLoadingThemes]);
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
@@ -178,41 +187,6 @@ export default function App() {
             {connectedSources.has('search') ? '✓ Search' : 'Google Search'}
           </ConnectionButton>
         </div>
-        
-        {/* Manual refresh button */}
-        {personalityTree && (
-          <button
-            onClick={() => loadThemes(true)}
-            disabled={isLoadingThemes}
-            style={{
-              marginTop: '0.5rem',
-              padding: '0.5rem 1rem',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              color: 'white',
-              fontFamily: 'monospace',
-              fontSize: '0.75rem',
-              cursor: isLoadingThemes ? 'wait' : 'pointer',
-              opacity: isLoadingThemes ? 0.5 : 1,
-              borderRadius: '4px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              if (!isLoadingThemes) {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-            }}
-          >
-            {isLoadingThemes ? 'Refreshing...' : '↻ Refresh'}
-          </button>
-        )}
 
         {/* Status Messages */}
         {isLoadingThemes && (
@@ -287,7 +261,7 @@ export default function App() {
               fontStyle: 'italic',
             }}
           >
-            Connect more sources, then click Refresh
+            Connect more sources for more planets
           </div>
         )}
       </div>

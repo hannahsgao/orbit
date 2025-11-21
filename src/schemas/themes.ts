@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const ThemeSourceSchema = z.object({
   title: z.string(),
   url: z.string().optional(),
-  type: z.enum(['track', 'artist', 'playlist', 'genre', 'email', 'sender', 'conversation']),
+  type: z.enum(['track', 'artist', 'playlist', 'genre', 'email', 'sender', 'conversation', 'search']),
 });
 
 export const ThemeSchema = z.object({

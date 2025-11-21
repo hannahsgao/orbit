@@ -1,0 +1,488 @@
+[
+  {
+    "search": "how to learn python programming",
+    "timestamp": "2025-10-01T10:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "best restaurants near me",
+    "timestamp": "2025-10-01T12:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "react hooks useState tutorial",
+    "timestamp": "2025-10-02T09:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "weather forecast this week",
+    "timestamp": "2025-10-02T14:20:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "git rebase vs merge difference",
+    "timestamp": "2025-10-03T11:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "typescript interface vs type",
+    "timestamp": "2025-10-03T15:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "coffee shops with wifi study",
+    "timestamp": "2025-10-04T08:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "DALL-E image generation API",
+    "timestamp": "2025-10-04T13:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "best productivity apps 2025",
+    "timestamp": "2025-10-05T10:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "pytest mock testing python",
+    "timestamp": "2025-10-05T16:20:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "feminist themes in classic films",
+    "timestamp": "2025-10-06T09:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "The Wizard of Oz 1939 cultural impact",
+    "timestamp": "2025-10-06T09:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Dorothy Gale feminist character analysis",
+    "timestamp": "2025-10-06T10:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "docker compose tutorial beginners",
+    "timestamp": "2025-10-06T14:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "vegetarian meal prep ideas",
+    "timestamp": "2025-10-06T18:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "L Frank Baum views on women's suffrage",
+    "timestamp": "2025-10-07T10:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Wizard of Oz Baum suffragette mother",
+    "timestamp": "2025-10-07T10:20:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "female empowerment Wizard of Oz analysis",
+    "timestamp": "2025-10-07T11:05:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Glinda vs Wicked Witch feminist interpretation",
+    "timestamp": "2025-10-07T11:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "good and bad witch stereotypes gender",
+    "timestamp": "2025-10-07T11:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "typescript generics explained",
+    "timestamp": "2025-10-07T15:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "there's no place like home feminist reading",
+    "timestamp": "2025-10-08T09:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Dorothy agency vs passivity Wizard of Oz",
+    "timestamp": "2025-10-08T09:40:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Wizard of Oz male characters weakness",
+    "timestamp": "2025-10-08T10:10:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "scarecrow tin man cowardly lion masculinity crisis",
+    "timestamp": "2025-10-08T10:25:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "feminist film theory Laura Mulvey",
+    "timestamp": "2025-10-08T13:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "male gaze Wizard of Oz subversion",
+    "timestamp": "2025-10-08T14:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "best noise cancelling headphones for studying",
+    "timestamp": "2025-10-08T19:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Wizard of Oz ruby slippers power symbol",
+    "timestamp": "2025-10-09T10:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "women inheriting power Wizard of Oz",
+    "timestamp": "2025-10-09T10:50:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "sisterhood between Dorothy and Glinda analysis",
+    "timestamp": "2025-10-09T11:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "AWS S3 bucket permissions tutorial",
+    "timestamp": "2025-10-09T15:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "academic databases film studies",
+    "timestamp": "2025-10-10T09:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "JSTOR Wizard of Oz feminist critique",
+    "timestamp": "2025-10-10T09:20:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Salman Rushdie Wizard of Oz essay",
+    "timestamp": "2025-10-10T10:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Bonnie Friedman Wizard of Oz feminist interpretation",
+    "timestamp": "2025-10-10T11:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "how to cite film in MLA format",
+    "timestamp": "2025-10-10T14:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Zotero vs Mendeley citation management",
+    "timestamp": "2025-10-10T14:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Miss Gulch Almira Gulch witch transformation",
+    "timestamp": "2025-10-11T10:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "spinster villain archetype film",
+    "timestamp": "2025-10-11T10:20:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "women without men as villains cinema",
+    "timestamp": "2025-10-11T10:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Uncle Henry Aunt Em gender roles",
+    "timestamp": "2025-10-11T11:10:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Kansas vs Oz patriarchy vs matriarchy",
+    "timestamp": "2025-10-11T11:35:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "postgres vs mysql performance comparison",
+    "timestamp": "2025-10-11T16:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "quick healthy dinner recipes weeknight",
+    "timestamp": "2025-10-11T19:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "second wave feminism 1960s film criticism",
+    "timestamp": "2025-10-12T09:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Wizard of Oz released 1939 historical context women",
+    "timestamp": "2025-10-12T10:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Great Depression gender roles 1930s",
+    "timestamp": "2025-10-12T10:25:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "women workforce 1930s America",
+    "timestamp": "2025-10-12T10:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Dorothy journey hero's journey female protagonist",
+    "timestamp": "2025-10-12T13:20:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Joseph Campbell monomyth women critics",
+    "timestamp": "2025-10-12T13:40:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "heroine's journey Maureen Murdock",
+    "timestamp": "2025-10-12T14:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "best practice REST API design",
+    "timestamp": "2025-10-12T16:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Judy Garland age during filming Wizard of Oz",
+    "timestamp": "2025-10-13T10:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Judy Garland treatment MGM studio system",
+    "timestamp": "2025-10-13T10:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "feminism behind the scenes Hollywood golden age",
+    "timestamp": "2025-10-13T10:50:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Wizard of Oz costume design gender Dorothy",
+    "timestamp": "2025-10-13T11:20:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "gingham dress innocence femininity symbolism",
+    "timestamp": "2025-10-13T11:40:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "git cherry-pick multiple commits",
+    "timestamp": "2025-10-13T15:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "libraries open Sunday near me",
+    "timestamp": "2025-10-13T13:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Wicked Witch of the West misunderstood villain",
+    "timestamp": "2025-10-14T09:45:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Gregory Maguire Wicked feminist retelling",
+    "timestamp": "2025-10-14T10:10:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "vilification of powerful women fairy tales",
+    "timestamp": "2025-10-14T10:35:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "witch trials misogyny connection",
+    "timestamp": "2025-10-14T11:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "women magic power threatening patriarchy",
+    "timestamp": "2025-10-14T11:25:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "react context vs redux when to use",
+    "timestamp": "2025-10-14T16:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "matriarchy Oz all rulers women",
+    "timestamp": "2025-10-15T09:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Wizard revealed as fraud male authority",
+    "timestamp": "2025-10-15T09:55:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "critique of patriarchy Wizard of Oz Emerald City",
+    "timestamp": "2025-10-15T10:20:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "women leaders North South East West Oz",
+    "timestamp": "2025-10-15T10:40:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "feminist utopia dystopia Oz interpretation",
+    "timestamp": "2025-10-15T11:05:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "vscode extensions productivity 2025",
+    "timestamp": "2025-10-15T15:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "how to format research paper title page",
+    "timestamp": "2025-10-16T10:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "thesis statement examples feminist film analysis",
+    "timestamp": "2025-10-16T10:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "peer reviewed articles Wizard of Oz gender",
+    "timestamp": "2025-10-16T11:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Cinema Journal feminist film criticism archive",
+    "timestamp": "2025-10-16T11:25:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Toto Dorothy companion feminist reading",
+    "timestamp": "2025-10-16T14:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "women and animals film theory connection",
+    "timestamp": "2025-10-16T14:35:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "best yoga stretches for desk workers",
+    "timestamp": "2025-10-16T18:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "click your heels three times agency vs magic",
+    "timestamp": "2025-10-17T09:40:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Dorothy had power all along feminist meaning",
+    "timestamp": "2025-10-17T10:05:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "women self-realization vs external rescue narrative",
+    "timestamp": "2025-10-17T10:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Glinda withholding information from Dorothy",
+    "timestamp": "2025-10-17T10:55:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "women teaching women patriarchy complicity",
+    "timestamp": "2025-10-17T11:20:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "kubernetes deployment yaml example",
+    "timestamp": "2025-10-17T16:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Munchkins infantilization oppressed people",
+    "timestamp": "2025-10-18T10:10:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Dorothy as liberator white savior critique",
+    "timestamp": "2025-10-18T10:35:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "intersectional feminism classic film analysis",
+    "timestamp": "2025-10-18T11:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "race and gender Wizard of Oz 1939",
+    "timestamp": "2025-10-18T11:25:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "best coffee beans whole bean light roast",
+    "timestamp": "2025-10-18T19:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "counter arguments Wizard of Oz feminist reading",
+    "timestamp": "2025-10-19T09:50:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Dorothy returns home anti-feminist ending debate",
+    "timestamp": "2025-10-19T10:15:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "domestic sphere valorization vs feminist liberation",
+    "timestamp": "2025-10-19T10:40:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "it was all a dream ending meaning gender",
+    "timestamp": "2025-10-19T11:05:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "research paper conclusion how to write strong",
+    "timestamp": "2025-10-19T15:30:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "proofreading checklist academic papers",
+    "timestamp": "2025-10-19T16:00:00Z",
+    "searchType": "text"
+  },
+  {
+    "search": "Grammarly vs ProWritingAid comparison",
+    "timestamp": "2025-10-19T16:15:00Z",
+    "searchType": "text"
+  }
+]
+
